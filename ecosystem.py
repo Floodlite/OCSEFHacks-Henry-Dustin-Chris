@@ -165,7 +165,7 @@ def return_building_name_and_count(building):
     constructed_string = ""
     for item in building_dict:
         try:
-            constructed_string += item + " x" + building_dict[item][count] + "\n"
+            constructed_string += item + " x" + building_dict[item]["count"] + "\n"
         except IndexError:
             continue
     return constructed_string
