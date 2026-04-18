@@ -6,14 +6,14 @@ building_dict = {
         "score": 30,
         "water": 500.0,
         "chosen": False,
-        "ability": "None",
+        "ability": "",
     },
     "park": {
         "pollution": -5.0,
         "score": -10,
         "water": -10.0,
         "chosen": False,
-        "ability": "None",
+        "ability": "",
     },
     "highway": {
         "pollution": 4.5,
@@ -28,35 +28,35 @@ building_dict = {
         "score": 16.0,
         "water": 100.0,
         "chosen": False,
-        "ability": "None",
+        "ability": "",
     },
     "housing": {
         "pollution": 4,
         "score": 4,
         "water": 110.0,
         "chosen": False,
-        "ability": "None",
+        "ability": "",
     },
     "suburbs": {
         "pollution": 1,
         "score": 4,
         "water": 240.0,
         "chosen": False,
-        "ability": "None",
+        "ability": "",
     },
     "water pump": {
         "pollution": 1,
         "score": -2,
         "water": -150.0,
         "chosen": False,
-        "ability": "None",
+        "ability": "",
     },
     "oil well": {
         "pollution": 9,
         "score": 12,
         "water": 100.0,
         "chosen": False,
-        "ability": "None",
+        "ability": "",
     },
     "restaurant": {
         "pollution": 3,
@@ -79,6 +79,19 @@ def print_dict(dict):
         print("Score: " + str(dict[item]["score"]) + " points")
         print("Ability: " + str(dict[item]["ability"]))
         print("_________________________")
+
+def return_building_pollution(building):
+    return building_dict[building]["pollution"]
+def return_building_water(building):
+    return building_dict[building]["water"]
+def return_building_score(building):
+    return building_dict[building]["score"]
+def return_building_ability(building):
+    return building_dict[building]["ability"]
+
+def return_building_stats_long(building):
+    return "Pollution: " + str(dict[building]["pollution"]) + "\nWater consumption: " + str(dict[building]["pollution"]) + "\nScore: " + str(dict[building]["score"]) + " points" + "\nAbility: " + str(dict[building]["ability"])
+
 
 def print_stats(score, pollution, temp, light_level, water_level, animals):
     print("========================")
