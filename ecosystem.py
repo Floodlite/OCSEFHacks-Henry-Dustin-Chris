@@ -8,7 +8,7 @@ pollution = 0.0
 temp = 68.0
 light_level = 100.0
 water_level = 1000000.0 # declare existence for usage in functions
-modifiers_ongoning = []
+modifiers_ongoing = []
 
 events_dict = {
     "drought": {
@@ -21,10 +21,16 @@ events_dict = {
         "city_pollution_production": 6.0,
         "description": "An industrial spill has occurred, increasing pollution. Pollution will increase by 6 units per turn until the spill is cleaned up after the next 4 turns.",
         "duration": 4
+    },
+
+    "nuclear_meltdown": {
+        "city_pollution_production": 25,
+        "description": "A nuclear meltdown has occurred, increasing pollution significantly. Pollution will increase by 25 units next turn.",
+        "duration": 1
     }
 }
 
-modifiers_ongoning = []
+modifiers_ongoing = []
 
 building_dict = {
     "factory": {
@@ -205,7 +211,7 @@ def failure_message():
 
 def random_event():
     event = random.choice(list(events_dict.keys()))
-    modifiers_ongoning.append(events_dict[event])
+    modifiers_ongoing.append(events_dict[event])
     if event["city_water_net"]: # too lazy to implement global variable search to dynamically unapply, do if leftover time
         city_water_net -= event["city_water_net"]
     if event["city_pollution_production"]:
@@ -291,7 +297,7 @@ def play_game():
                 lose_reason = f"The {animal} population has collapsed. The ecosystem is incapable of sustaining life without human rebalancing."
         # input("Game logic updated.")
     # ongoing event modifiers
-        for event in modifiers_ongoning:
+        for event in modifiers_ongoing:
             event["duration"] -= 1
             if event["duration"] <= 0:
                 if event["city_water_net"]: # too lazy to implement global variable search to dynamically unapply, do if leftover time
