@@ -1,5 +1,21 @@
 import random
 
+events_dict = {
+    "drought": {
+        "city_water_net": -500.0,
+        "description": "A severe drought has reduced water availability. Water will reduce by 500 units per turn for the next 5 turns.",
+        "duration": 5
+    },
+
+    "industrial spill": {
+        "city_pollution_production": 6.0,
+        "description": "An industrial spill has occurred, increasing pollution. Pollution will increase by 6 units per turn until the spill is cleaned up after the next 4 turns.",
+        "duration": 4
+    }
+}
+
+modifiers_ongoning = []
+
 building_dict = {
     "factory": {
         "pollution": 10.0,
@@ -118,12 +134,16 @@ def restaurant_ability():
     animals["herbivores"]["count"] -= 10 * building_dict["restaurant"]["count"]
     print("Restaurant herbivore consumption: " + str(10 * building_dict["restaurant"]["count"]))
 
+def random_event():
+    event = random.choice(list(events_dict.keys()))
+    print("Random event: " + events_dict[event]["description"])
+    modifiers_ongoning.append(events_dict[event])
+    print(events_dict[event]["description"])
 
 def play_game():
     round = 1
     score = 0
     gameover = False
-    replay = False
     lose_reason = ""
     pollution = 0.0
     temp = 100.0
@@ -133,7 +153,7 @@ def play_game():
     water_toxicity = 0.0 # pollution bleedthrough + user buildings, implement later
 
     animal_types = 4
-    animals = [ # order matters, top predates on next level
+    animals = [ # order matters, top predates on next level down
         {"name": "apex_predators", "count": 10.0},
         {"name": "carnivores", "count": 100.0},
         {"name": "herbivores", "count": 1000.0},
@@ -188,7 +208,20 @@ def play_game():
             if count < 0: # todo: give options for human intervention to save ecosystem
                 gameover = True
                 lose_reason = f"The {animal} population has collapsed. The ecosystem is incapable of sustaining life without human rebalancing."
-            
+        
+    # ongoing event modifiers
+        for event in modifiers_ongoning:
+            event["duration"] -= 1
+            if event["duration"] <= 0:
+                if event["city_water_net"]: # too lazy to implement global variable search to dynamically unapply, do if leftover time
+                    city_water_net -= event["city_water_net"]
+                if event["city_pollution_production"]:
+                    city_pollution_production -= event["city_pollution_production"]
+                del event
+    
+    # make new random events(open-ended dice roll, in theory scales infinitely)
+    while random.random() < 0.2:
+        random_event()
     # player choices
     print("**** Round " + str(round) + " ****")
     print_stats(score, pollution, temp, light_level, water_level, animals)
