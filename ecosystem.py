@@ -7,21 +7,6 @@ pollution = 0.0
 temp = 68.0
 light_level = 100.0
 water_level = 1000000.0 # declare existence for usage in functions
-
-events_dict = {
-    "drought": {
-        "city_water_net": -500.0,
-        "description": "A severe drought has reduced water availability. Water will reduce by 500 units per turn for the next 5 turns.",
-        "duration": 5
-    },
-
-    "industrial spill": {
-        "city_pollution_production": 6.0,
-        "description": "An industrial spill has occurred, increasing pollution. Pollution will increase by 6 units per turn until the spill is cleaned up after the next 4 turns.",
-        "duration": 4
-    },
-}
-
 modifiers_ongoning = []
 
 events_dict = {
