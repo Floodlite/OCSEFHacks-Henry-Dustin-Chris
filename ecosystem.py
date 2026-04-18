@@ -129,6 +129,35 @@ def print_stats(score, pollution, temp, light_level, water_level, animals):
     print("Apex predators alive: " + str(animals["apex_predators"]["count"]))
     print("========================")
 
+def return_building_pollution(building):
+    return str(building_dict[building]["pollution"])
+def return_building_water(building):
+    return str(building_dict[building]["water"])
+def return_building_score(building):
+    return str(building_dict[building]["score"])
+def return_building_ability(building):
+    return str(building_dict[building]["ability"])
+
+def return_building_stats_long(building):
+    return "Pollution: " + str(dict[building]["pollution"]) + "\nWater consumption: " + str(dict[building]["pollution"]) + "\nScore: " + str(dict[building]["score"]) + " points" + "\nAbility: " + str(dict[building]["ability"])
+def line_break():
+    return "========================"
+def return_score():
+    return str(score)
+def return_pollution():
+    return str(pollution)
+def return_temperature():
+    return str(temp)
+def return_light():
+    return str(light_level)
+def return_water():
+    return str(water_level)
+def return_plant_count():
+    return str(animals["plants"]["count"])
+def return_herbivore_count():
+    return str(animals["herbivores"]["count"])
+def return_carnivore_count():
+    return str(animals["carnivore"]["count"])
 
 def pick_available_buildings(dict, available_choices=3):
     building_names = []
@@ -146,14 +175,22 @@ def highway_ability():
     building_dict["highway"]["count"] += 1
     score += 2 * building_dict["highway"]["count"]
     print("Highway count: " + str(building_dict["highway"]["count"]))
-
-
 def restaurant_ability():
     global animals
     global building_dict
     building_dict["restaurant"]["count"] += 1
     animals["herbivores"]["count"] -= 10 * building_dict["restaurant"]["count"]
     print("Restaurant herbivore consumption: " + str(10 * building_dict["restaurant"]["count"]))
+
+def return_round_number():
+    global round
+    return "**** Round " + str(round) + " ****"
+def building_error_message():
+    return "Building not available this round, see above for valid choices"
+def input_error_message():
+     return "Invalid input, please try again"
+def failure_message():
+    return f"{lose_reason}\nYou have lost after {round} rounds of play with {score} points"
 
 def random_event():
     event = random.choice(list(events_dict.keys()))
