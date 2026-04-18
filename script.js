@@ -58,6 +58,11 @@ function draw() {
     ctx.fillText("Temperature: " + String(temperature) + "°F", 100, 220);
     ctx.fillText("Organic Waste: " + String(organic_waste), 100, 245);
 
+    
+
+
+
+
 
     ctx.drawImage(background2, 200, -50, 500, 350);
     
