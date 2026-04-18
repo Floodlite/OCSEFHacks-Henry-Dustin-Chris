@@ -75,8 +75,9 @@ def play_game():
     ]
 
     ORGANIC_WATER_NEED = 0.01
-    SUNLIGHT_GROWTH_FACTOR = 0.01
+    PLANT_GROWTH_FACTOR = 0.03
     WATER_REPLENISH_RATE = 1000.0 # aquifers, rain, natural sources
+    ORGANICS_REPLENISH_RATE = 100.0 # natural decay, etc from outside ecosystem entering
     ENERGY_TRANSFER_EFFICENCY = 0.1 # how much energy is transferred from one trophic level to the next
     POLLUTION_EFFECT_FACTOR = 0.01
     BASE_DEATH_RATE = 0.01
@@ -85,9 +86,9 @@ def play_game():
     STARVATION_RATE = 0.2 # only works later, right now useless until intervention of dying ecosystem possible
     city_water_net = 0.0 # you can add pumps later to increase this, or drain it with consumption
     city_pollution_production = 0.0 # buildings affect
+    city_organics_production = 0.0 # composting, etc, can be negative with certain buildings
 
-    # todo: water toxicity, human intervention options, more complex food web, random events (droughts, floods, etc), player choices and consequences, graphics and UI, endgame PSA about real world ecosystem collapse and how to help
-
+    # todo: random events, player direct intervention, maximum "living space" mechanic to reduce growth over time
     while gameover == False:
         i = animal_types
         # game loop
@@ -95,8 +96,9 @@ def play_game():
         water_level -= ORGANIC_WATER_NEED * animals["plants"]["count"] * temp * 0.01 # plant consumption, boil-off rate mult
         water_level += WATER_REPLENISH_RATE + city_water_net * (pollution * (1 - POLLUTION_EFFECT_FACTOR)) # standin for water toxicity until implemented
         organic_matter -= ORGANIC_MATTER_NEED * animals["plants"]["count"] # plant fertilizer consumption
+        organic_matter += ORGANICS_REPLENISH_RATE + city_organics_production * (1 - (pollution * POLLUTION_EFFECT_FACTOR)) # city composting, etc, pollution means some wasted
         pollution = abs(pollution + city_pollution_production) # can't be negative
-        animals["plants"]["count"] += SUNLIGHT_GROWTH_FACTOR * light_level * animals["plants"]["count"] * (pollution * (1 - POLLUTION_EFFECT_FACTOR))
+        animals["plants"]["count"] += PLANT_GROWTH_FACTOR * (light_level * 0.01) * animals["plants"]["count"] * (pollution * (1 - POLLUTION_EFFECT_FACTOR))
         if pollution > 100:
             gameover = True
             lose_reason = "The ecosystem is too toxic to support life. All life has perished."
@@ -155,4 +157,9 @@ def play_game():
 while True:
     replay = play_game()
     if replay.lower() != "y":
+        print(
+            """Thank you for playing. While this game is a simple simulation, it represents very real problems in the world. 
+            Ecosystem collapse is a very real threat, and we all have a role to play in preventing it everyday. 
+            Please consider learning more about how you can help protect our planet and its ecosystems at https://sdgs.un.org/goals/goal12."""
+            )
         break
