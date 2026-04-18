@@ -16,8 +16,8 @@ h1 {
 }
 
 canvas {
-  background: #ffffff;
   border-radius: 0px;
+  background-color: #ffffff;
 }
 
 p {
