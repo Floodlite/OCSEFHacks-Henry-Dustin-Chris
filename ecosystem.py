@@ -80,7 +80,7 @@ def print_dict(dict):
         print("Ability: " + str(dict[item]["ability"]))
         print("_________________________")
 
-def print_stats():
+def print_stats(score, pollution, temp, light_level, water_level, animals):
     print("========================")
     print("Your score: " + str(score))
     print("Pollution: " + str(pollution))
@@ -104,18 +104,6 @@ def pick_available_buildings(dict, available_choices=3):
     for i in range(available_choices):
         dict[building_names[i]]["chosen"] = True
 
-def play_game():
-    round = 1
-    score = 0
-    gameover = False
-    replay = False
-    lose_reason = ""
-    pollution = 0.0
-    temp = 100.0
-    light_level = 100.0
-    water_level = 1000000.0
-    organic_matter = 100000.0
-    water_toxicity = 0.0 # pollution bleedthrough + user buildings, implement later
 def highway_ability():
     global score
     global building_dict
@@ -130,6 +118,20 @@ def restaurant_ability():
     animals["herbivores"]["count"] -= 10 * building_dict["restaurant"]["count"]
     print("Restaurant herbivore consumption: " + str(10 * building_dict["restaurant"]["count"]))
 
+
+def play_game():
+    round = 1
+    score = 0
+    gameover = False
+    replay = False
+    lose_reason = ""
+    pollution = 0.0
+    temp = 100.0
+    light_level = 100.0
+    water_level = 1000000.0
+    organic_matter = 100000.0
+    water_toxicity = 0.0 # pollution bleedthrough + user buildings, implement later
+
     animal_types = 4
     animals = [ # order matters, top predates on next level
         {"name": "apex_predators", "count": 10.0},
@@ -137,7 +139,7 @@ def restaurant_ability():
         {"name": "herbivores", "count": 1000.0},
         {"name": "plants", "count": 10000.0}
     ]
-
+    
     ORGANIC_WATER_NEED = 0.01
     PLANT_GROWTH_FACTOR = 0.03
     WATER_REPLENISH_RATE = 1000.0 # aquifers, rain, natural sources
@@ -189,7 +191,7 @@ def restaurant_ability():
             
     # player choices
     print("**** Round " + str(round) + " ****")
-    print_stats()
+    print_stats(score, pollution, temp, light_level, water_level, animals)
     pick_available_buildings(building_dict, 3)
     while(True):
         print_dict(building_dict)
@@ -209,7 +211,9 @@ def restaurant_ability():
             else:
                 print("Building not available this round, see above for valid choices")
                 continue
-
+        except:
+            print("Invalid input, please try again")
+            continue
 
         # filler text and display graphics
         print("Score: " + str(score))
