@@ -316,7 +316,7 @@ def play_game():
                 if (building_dict[player_input]["chosen"]):
                     print(uppercase_input + " built!")
                     city_pollution_production += building_dict[player_input]["pollution"]
-                    score += building_dict[player_input]["score"]
+                    score += building_dict[player_input]["score"] * score_multiplier
                     city_water_net += building_dict[player_input]["water"]
                     if (player_input == "highway"):
                         highway_ability()
@@ -324,6 +324,8 @@ def play_game():
                         building_dict["restaurant"]["count"] += 1
                     if(building_dict["restaurant"]["count"] >= 1):
                         restaurant_ability()
+                    if (player_input == "skyscraper"):
+                        score_multiplier += 0.1
                     break
                 else:
                     print("Building not available this round, see above for valid choices")
