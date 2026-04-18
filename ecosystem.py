@@ -28,7 +28,11 @@ events_dict = {
         "description": "A nuclear meltdown has occurred, increasing pollution significantly. Pollution will increase by 25 units next turn.",
         "duration": 1
     },
-    
+    "overpopulation": {
+        "city_pollution_production": 5.0,
+        "description": "New societal and biological developments cause populations to swell. Populations increase by 35% and pollution will increase by 5 units per turn",
+        "duration": 4
+    },
 }
 
 modifiers_ongoing = []
@@ -220,6 +224,7 @@ def random_event():
 
 
 def play_game():
+    global score_multiplier
     round = 1
     score = 0
     gameover = False
