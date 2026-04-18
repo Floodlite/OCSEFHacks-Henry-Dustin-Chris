@@ -1,39 +1,39 @@
 Imports
 
 
-Initalize inital populations
-Points
-Plants
-Consumers
-Secondary consumers
-Apex predators
-Decomposers
+Initalize inital populations(90%)
+Points(In Progress, 40%)
+Plants(In Progress 80%)
+Consumers(Done)
+Secondary consumers(Done)
+Apex predators(Done)
+Decomposers(Done)
 
-Variables
-Organic matter (usable energy)
-Sunlight
-Water
+Variables(80%)
+Organic matter (usable energy)(Done)
+Sunlight(Pending)
+Water(Done)
 
 Urban Sprawl
-Pollution
-Temperature
+Pollution(60%-Done depending on feature buildin)
+Temperature(40%-Done depending on feature buildin)
 
-Gameplay loop
+Gameplay loop(40-70% Done)
 Choose building to construct
 * Factory: High pollution, high points
 Modify temperature and pollution accordingly
 
 
 Change populations
-1. Grass grows
-2. Consumers consume grass
+1. Grass grows(Done)
+2. Consumers consume grass(Done)
  * Each consumers eats 10 units of grass
-3. Predators consume consumers
+3. Predators consume consumers(Done)
   * Each predator eats 100 units of consumers
-4. Increase decomposers and organic matter whenever something dies
-5. Kill off animals for old age (scales over time)
-Print results
+4. Increase decomposers and organic matter whenever something dies(Done)
+5. Kill off animals for old age (scales over time)(Done)
+Print results(Done)
 
-If everyone is dead, game over
-If temperature or pollution get too high, game over
-Cut to PSA
+If everyone is dead, game over(Pending)
+If resource exhausted or pollution gets too high, game over(Done)
+Cut to PSA(Done)
