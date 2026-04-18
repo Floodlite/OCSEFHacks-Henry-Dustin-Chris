@@ -30,8 +30,8 @@ events_dict = {
     },
     "overpopulation": {
         "city_pollution_production": 5.0,
-        "description": "New societal and biological developments cause populations to swell. Populations increase by 35% and pollution will increase by 5 units per turn",
-        "duration": 4
+        "description": "New societal and biological developments cause populations to swell. Populations increase by 35% and pollution will increase by 5 units for the next 4 turns",
+        "duration": 4,
     },
 }
 
@@ -218,13 +218,17 @@ def random_event():
     event = random.choice(list(events_dict.keys()))
     modifiers_ongoing.append(events_dict[event])
     if event["city_water_net"]: # too lazy to implement global variable search to dynamically unapply, do if leftover time
-        city_water_net -= event["city_water_net"]
+        city_water_net += event["city_water_net"]
     if event["city_pollution_production"]:
-        city_pollution_production -= event["city_pollution_production"]
+        city_pollution_production += event["city_pollution_production"]
+    if(event["overpopulation"]):
+        city_pollution_production += event["city_pollution_production"]
+        for item in animals:
+            animals[item]["count"] *= 1.35
 
 
 def play_game():
-    global score_multiplier
+    score_multiplier = 1.0
     round = 1
     score = 0
     gameover = False
@@ -310,6 +314,10 @@ def play_game():
                     city_water_net -= event["city_water_net"]
                 if event["city_pollution_production"]:
                     city_pollution_production -= event["city_pollution_production"]
+                if(event["overpopulation"]):
+                    city_pollution_production -= event["city_pollution_production"]
+                    for item in animals:
+                        animals[item]["count"] /= 1.35
                 del event
         # input("Random events updated.")
         # make new random events(open-ended dice roll, in theory scales infinitely)
