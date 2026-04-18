@@ -75,8 +75,29 @@ building_dict = {
         "water": 240.0,
         "chosen": False,
         "ability": "None",
-    }
-
+    },
+    "water pump": {
+        "pollution": 1,
+        "score": -2,
+        "water": -150.0,
+        "chosen": False,
+        "ability": "None",
+    },
+    "oil well": {
+        "pollution": 9,
+        "score": 12,
+        "water": 100.0,
+        "chosen": False,
+        "ability": "None",
+    },
+    "restaurant": {
+        "pollution": 3,
+        "score": 6.5,
+        "water": 110.0,
+        "chosen": False,
+        "count": 0,
+        "ability": "Ability: Consumes 10 herbivores each turn per restaurant",
+    },
 }
 
 def print_dict(dict):
@@ -117,8 +138,17 @@ def pick_available_buildings(dict, available_choices=3):
 
 def highway_ability():
     global score
+    global building_dict
     building_dict["highway"]["count"] += 1
     score += 2 * building_dict["highway"]["count"]
+    print("Highway count: " + str(building_dict["highway"]["count"]))
+
+def restaurant_ability():
+    global animals
+    global building_dict
+    building_dict["restaurant"]["count"] += 1
+    animals["herbivores"]["count"] -= 10 * building_dict["restaurant"]["count"]
+    print("Restaurant herbivore consumption: " + str(10 * building_dict["restaurant"]["count"]))
 
 while gameover == False:
     i = animal_types
@@ -165,7 +195,9 @@ while gameover == False:
                 city_water_net += building_dict[player_input]["water"]
                 if(player_input == "highway"):
                     highway_ability()
-
+                if (player_input == "restaurant"):
+                    building_dict["restaurant"]["count"] += 1
+                restaurant_ability()
                 break
             else:
                 print("Building not available this round, see above for valid choices")
