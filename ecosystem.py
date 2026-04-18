@@ -218,7 +218,7 @@ def play_game():
     }
     
     ORGANIC_WATER_NEED = 0.01
-    PLANT_GROWTH_FACTOR = 0.03
+    PLANT_GROWTH_FACTOR = 0.05
     WATER_REPLENISH_RATE = 1000.0  # aquifers, rain, natural sources
     ORGANICS_REPLENISH_RATE = 100.0  # natural decay, etc from outside ecosystem entering
     ENERGY_TRANSFER_EFFICENCY = 0.1  # how much energy is transferred from one trophic level to the next
@@ -238,14 +238,15 @@ def play_game():
         temp = random.randrange(int(70 + pollution * 0.95), int(100.0 + pollution * 1.25), 1) # random temp fluctuation, exacerbated by pollution/climate change
         
         water_level -= ORGANIC_WATER_NEED * animals["plants"]["count"] * temp * 0.01 # plant consumption, boil-off rate mult
-        water_level += WATER_REPLENISH_RATE + city_water_net * (pollution * (1 - POLLUTION_EFFECT_FACTOR)) # standin for water toxicity until implemented
+        water_level += WATER_REPLENISH_RATE + city_water_net * (1 - pollution * POLLUTION_EFFECT_FACTOR) # standin for water toxicity until implemented
         organic_matter -= ORGANIC_MATTER_NEED * animals["plants"]["count"] # plant fertilizer consumption
         organic_matter += ORGANICS_REPLENISH_RATE + city_organics_production * (1 - (pollution * POLLUTION_EFFECT_FACTOR)) # city composting, etc, pollution means some wasted
 
         pollution = abs(pollution + city_pollution_production) # can't be negative
-        animals["plants"]["count"] += PLANT_GROWTH_FACTOR * (light_level * 0.01) * animals["plants"]["count"] * (pollution * (1 - POLLUTION_EFFECT_FACTOR))
+        grown = PLANT_GROWTH_FACTOR * (light_level * 0.01) * animals["plants"]["count"] * (1 - pollution * POLLUTION_EFFECT_FACTOR)
+        print(f"{grown} plants have grown.")
+        animals["plants"]["count"] += grown
         input("Plants have grown, beginning animal population updates.")
-        print(f"Plants: {animals['plants']['count']},")
         if pollution > 100:
             gameover = True
             lose_reason = "The ecosystem is too toxic to support life. All life has perished."
@@ -264,8 +265,8 @@ def play_game():
                 count += ENERGY_TRANSFER_EFFICENCY * PREDATION_RATE * list(animals.values())[i]["count"] # "ate" a lower tier animal
             if i > 1: # not apex predators
                 input("Eating animals of species...")
-                input(f"Animal to be consumed is {list(animals.keys())[i-1]} and amount of that animal alive is {list(animals.values())[i-1]["count"]}.")
-                eaten = PREDATION_RATE * count # "got eaten" by a higher tier animal
+                input(f"Animal to be consumed is {animal} by {list(animals.keys())[i-2]} and amount of that animal alive is {count}.")
+                eaten = PREDATION_RATE * list(animals.values())[i-2]["count"] # "got eaten" by a higher tier animal
                 count -= eaten
                 print("Eaten by higher tier animal: " + str(eaten))
                 organic_matter += eaten * (1 - (pollution * POLLUTION_EFFECT_FACTOR))  # replenishes organic matter
