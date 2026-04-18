@@ -13,10 +13,10 @@ water_toxicity = 0.0 # pollution bleedthrough + user buildings, implement later
 
 animal_types = 4
 animals = [ # order matters, top predates on next level
-    {"name": "apex_predators", "count": 10},
-    {"name": "carnivores", "count": 100},
-    {"name": "herbivores", "count": 1000},
-    {"name": "plants", "count": 10000}
+    {"name": "apex_predators", "count": 10.0},
+    {"name": "carnivores", "count": 100.0},
+    {"name": "herbivores", "count": 1000.0},
+    {"name": "plants", "count": 10000.0}
 ]
 
 ORGANIC_WATER_NEED = 0.01
@@ -26,7 +26,8 @@ ENERGY_TRANSFER_EFFICENCY = 0.1 # how much energy is transferred from one trophi
 POLLUTION_EFFECT_FACTOR = 0.01
 BASE_DEATH_RATE = 0.01
 PREDATION_RATE = 0.02
-STARVATION_RATE = 0.2
+ORGANIC_MATTER_NEED = 0.01 
+STARVATION_RATE = 0.2 # only works later, right now useless until intervention of dying ecosystem possible
 city_water_net = 0.0 # you can add pumps later to increase this, or drain it with consumption
 city_pollution_production = 0.0 # buildings affect
 
@@ -89,10 +90,10 @@ def pick_available_buildings(dict, available_choices=3):
 while gameover == False:
     i = animal_types
     # game loop
-    #fix random.random
-    temp = random.random(70 + pollution * 0.95, 100 + pollution * 1.25) # random temp fluctuation, exacerbated by pollution/climate change
+    temp = random.randrange(start=70 + pollution * 0.95, stop=100 + pollution * 1.25, step=0.01) # random temp fluctuation, exacerbated by pollution/climate change
     water_level -= ORGANIC_WATER_NEED * animals["plants"]["count"] * temp * 0.01 # plant consumption, boil-off rate mult
     water_level += WATER_REPLENISH_RATE + city_water_net * (pollution * (1 - POLLUTION_EFFECT_FACTOR)) # standin for water toxicity until implemented
+    organic_matter -= ORGANIC_MATTER_NEED * animals["plants"]["count"] # plant fertilizer consumption
     pollution = abs(pollution + city_pollution_production) # can't be negative
     animals["plants"]["count"] += SUNLIGHT_GROWTH_FACTOR * light_level * animals["plants"]["count"] * (pollution * (1 - POLLUTION_EFFECT_FACTOR))
     if pollution > 100:
@@ -105,11 +106,15 @@ while gameover == False:
         i -= 1
         animal = animal_dict["name"]
         count = animal_dict["count"]
-        count -= BASE_DEATH_RATE * count * (pollution * POLLUTION_EFFECT_FACTOR + 1)
+        natural_deaths = BASE_DEATH_RATE * count * (pollution * POLLUTION_EFFECT_FACTOR + 1)
+        count -= natural_deaths * (1 - (pollution * POLLUTION_EFFECT_FACTOR)) # pollution represents toxicity, some cannot be recycled
+        organic_matter += natural_deaths 
         if i > 1: # not plants
             count += ENERGY_TRANSFER_EFFICENCY * PREDATION_RATE * animals[i-1]["count"] # "ate" a lower tier animal
         if i != animal_types: # not apex predators
-            count -= PREDATION_RATE * count * animals[i+1]["count"] # "got eaten" by a higher tier animal
+            eaten = PREDATION_RATE * count * animals[i+1]["count"] # "got eaten" by a higher tier animal
+            count -= eaten
+            organic_matter += eaten * (1 - (pollution * POLLUTION_EFFECT_FACTOR)) # replenishes organic matter
         animal_dict["count"] = count
         if count < 0: # todo: give options for human intervention to save ecosystem
             gameover = True
@@ -142,3 +147,7 @@ while gameover == False:
     round += 1
 
 # endgame psa
+print("You have lost. ")
+print(lose_reason)
+print(f"You scored {score} points.")
+input("Play again(Y/N)?")
