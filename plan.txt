@@ -9,7 +9,7 @@ Secondary consumers(Done)
 Apex predators(Done)
 Decomposers(Done)
 
-Variables(80%)
+Variables(90%, MVP Done)
 Organic matter (usable energy)(Done)
 Sunlight(Pending)
 Water(Done)
@@ -18,7 +18,7 @@ Urban Sprawl
 Pollution(60%-Done depending on feature buildin)
 Temperature(40%-Done depending on feature buildin)
 
-Gameplay loop(40-70% Done)
+Gameplay loop(70-90% Done)
 Choose building to construct
 * Factory: High pollution, high points
 Modify temperature and pollution accordingly
@@ -37,3 +37,18 @@ Print results(Done)
 If everyone is dead, game over(Pending)
 If resource exhausted or pollution gets too high, game over(Done)
 Cut to PSA(Done)
+
+TODO:
+3:00: Begin playtesting, bughunting, confirms MVP ships
+4:00 Ship MVP version, begin polish
+4:10 Finalize roadmap
+4:40 Finish polish
+4:45-5:30 Wrap up, networking, buffer time, extras
+EXTRAS(All Pending):
+
+1. Difficulty level, scales w/ time and base difficulty selection
+1a. Affects event frequency, intensity, pollution/score gains(mult to both positive)
+
+2. Flavor text events, "news ticker"
+
+3. 

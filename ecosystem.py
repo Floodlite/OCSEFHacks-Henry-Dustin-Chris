@@ -1,4 +1,21 @@
 import random
+import math
+
+events_dict = {
+    "drought": {
+        "city_water_net": -500.0,
+        "description": "A severe drought has reduced water availability. Water will reduce by 500 units per turn for the next 5 turns.",
+        "duration": 5
+    },
+
+    "industrial spill": {
+        "city_pollution_production": 6.0,
+        "description": "An industrial spill has occurred, increasing pollution. Pollution will increase by 6 units per turn until the spill is cleaned up after the next 4 turns.",
+        "duration": 4
+    }
+}
+
+modifiers_ongoning = []
 
 building_dict = {
     "factory": {
@@ -118,12 +135,16 @@ def restaurant_ability():
     animals["herbivores"]["count"] -= 10 * building_dict["restaurant"]["count"]
     print("Restaurant herbivore consumption: " + str(10 * building_dict["restaurant"]["count"]))
 
+def random_event():
+    event = random.choice(list(events_dict.keys()))
+    print("Random event: " + events_dict[event]["description"])
+    modifiers_ongoning.append(events_dict[event])
+    print(events_dict[event]["description"])
 
 def play_game():
     round = 1
     score = 0
     gameover = False
-    replay = False
     lose_reason = ""
     pollution = 0.0
     temp = 100.0
@@ -133,12 +154,12 @@ def play_game():
     water_toxicity = 0.0 # pollution bleedthrough + user buildings, implement later
 
     animal_types = 4
-    animals = [ # order matters, top predates on next level
-        {"name": "apex_predators", "count": 10.0},
-        {"name": "carnivores", "count": 100.0},
-        {"name": "herbivores", "count": 1000.0},
-        {"name": "plants", "count": 10000.0}
-    ]
+    animals = { # order matters, top predates on next level down
+        "apex_predators": {"count": 10.0},
+        "carnivores": {"count": 100.0},
+        "herbivores": {"count": 1000.0},
+        "plants": {"count": 10000.0}
+    }
     
     ORGANIC_WATER_NEED = 0.01
     PLANT_GROWTH_FACTOR = 0.03
@@ -155,40 +176,60 @@ def play_game():
     city_organics_production = 0.0 # composting, etc, can be negative with certain buildings
 
     # todo: random events, player direct intervention, maximum "living space" mechanic to reduce growth over time
-    while gameover == False:
-        i = animal_types
+    while not gameover:
+        input("Beginning round " + str(round) + " logic update:")
         # game loop
-        temp = random.randrange(start=70 + pollution * 0.95, stop=100 + pollution * 1.25, step=0.01) # random temp fluctuation, exacerbated by pollution/climate change
+        temp = random.randrange(int(70 + pollution * 0.95), int(100.0 + pollution * 1.25), 1) # random temp fluctuation, exacerbated by pollution/climate change
+        
         water_level -= ORGANIC_WATER_NEED * animals["plants"]["count"] * temp * 0.01 # plant consumption, boil-off rate mult
         water_level += WATER_REPLENISH_RATE + city_water_net * (pollution * (1 - POLLUTION_EFFECT_FACTOR)) # standin for water toxicity until implemented
         organic_matter -= ORGANIC_MATTER_NEED * animals["plants"]["count"] # plant fertilizer consumption
         organic_matter += ORGANICS_REPLENISH_RATE + city_organics_production * (1 - (pollution * POLLUTION_EFFECT_FACTOR)) # city composting, etc, pollution means some wasted
+
         pollution = abs(pollution + city_pollution_production) # can't be negative
         animals["plants"]["count"] += PLANT_GROWTH_FACTOR * (light_level * 0.01) * animals["plants"]["count"] * (pollution * (1 - POLLUTION_EFFECT_FACTOR))
+        input("Plants have grown, beginning animal population updates.")
         if pollution > 100:
             gameover = True
             lose_reason = "The ecosystem is too toxic to support life. All life has perished."
         if water_level < 0:
             gameover = True
             lose_reason = "The ecosystem has no more clean water. All life has perished."
-        for animal_dict in animals:
-            i -= 1
-            animal = animal_dict["name"]
+        for i, (animal, animal_dict) in enumerate(animals.items(), start=1):
             count = animal_dict["count"]
             natural_deaths = BASE_DEATH_RATE * count * (pollution * POLLUTION_EFFECT_FACTOR + 1)
             count -= natural_deaths * (1 - (pollution * POLLUTION_EFFECT_FACTOR)) # pollution represents toxicity, some cannot be recycled
             organic_matter += natural_deaths 
-            if i > 1: # not plants
-                count += ENERGY_TRANSFER_EFFICENCY * PREDATION_RATE * animals[i-1]["count"] # "ate" a lower tier animal
-            if i != animal_types: # not apex predators
-                eaten = PREDATION_RATE * count * animals[i+1]["count"] # "got eaten" by a higher tier animal
+            if i < animal_types: # not plants
+                input("Predation phase...")
+                input(f"Animal to prey on is {list(animals.keys())[i]} and amount of that animal is {list(animals.values())[i]["count"]}.")
+                count += ENERGY_TRANSFER_EFFICENCY * PREDATION_RATE * list(animals.values())[i]["count"] # "ate" a lower tier animal
+            if i > 1: # not apex predators
+                input("Eating animals of species...")
+                input(f"Animal to be consumed is {list(animals.keys())[i-1]} and amount of that animal is {list(animals.values())[i-1]["count"]}.")
+                eaten = PREDATION_RATE * count * list(animals.values())[i-1]["count"] # "got eaten" by a higher tier animal
                 count -= eaten
                 organic_matter += eaten * (1 - (pollution * POLLUTION_EFFECT_FACTOR)) # replenishes organic matter
             animal_dict["count"] = count
+            input(f"Animal population updated for animal {animal}. i is {i}.")
             if count < 0: # todo: give options for human intervention to save ecosystem
                 gameover = True
                 lose_reason = f"The {animal} population has collapsed. The ecosystem is incapable of sustaining life without human rebalancing."
-            
+        input("Game logic updated.")
+    # ongoing event modifiers
+        for event in modifiers_ongoning:
+            event["duration"] -= 1
+            if event["duration"] <= 0:
+                if event["city_water_net"]: # too lazy to implement global variable search to dynamically unapply, do if leftover time
+                    city_water_net -= event["city_water_net"]
+                if event["city_pollution_production"]:
+                    city_pollution_production -= event["city_pollution_production"]
+                del event
+    input("Random events updated.")
+    # make new random events(open-ended dice roll, in theory scales infinitely)
+    while random.random() < 0.2:
+        random_event()
+        input("Random event triggered.")
     # player choices
     print("**** Round " + str(round) + " ****")
     print_stats(score, pollution, temp, light_level, water_level, animals)
@@ -211,7 +252,8 @@ def play_game():
             else:
                 print("Building not available this round, see above for valid choices")
                 continue
-        except:
+        except Exception as e:
+            print(f"Error: {e}")
             print("Invalid input, please try again")
             continue
 
@@ -225,11 +267,15 @@ def play_game():
     print(f"You scored {score} points.")
     return input("Play again(Y/N)?")
 while True:
-    replay = play_game()
-    if replay.lower() != "y":
-        print(
-            """Thank you for playing. While this game is a simple simulation, it represents very real problems in the world. 
-            Ecosystem collapse is a very real threat, and we all have a role to play in preventing it everyday. 
-            Please consider learning more about how you can help protect our planet and its ecosystems at https://sdgs.un.org/goals/goal12."""
-            )
-        break
+    try:
+        input("Beginning game loop:")
+        replay = play_game()
+        if replay.lower() != "y":
+            print(
+                """Thank you for playing. While this game is a simple simulation, it represents very real problems in the world. 
+                Ecosystem collapse is a very real threat, and we all have a role to play in preventing it everyday. 
+                Please consider learning more about how you can help protect our planet and its ecosystems at https://sdgs.un.org/goals/goal12."""
+                )
+            break
+    except Exception as e:
+        print("An error occurred: " + str(e))
