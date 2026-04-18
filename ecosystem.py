@@ -3,6 +3,7 @@ import math
 
 lose_reason = ""
 score = 0
+score_multiplier = 1.0
 pollution = 0.0
 temp = 68.0
 light_level = 100.0
@@ -32,12 +33,14 @@ building_dict = {
         "water": 500.0,
         "chosen": False,
         "ability": "",
+        "count": 0,
     },
     "park": {
         "pollution": -5.0,
         "score": -10,
         "water": -10.0,
         "chosen": False,
+        "count": 0,
         "ability": "",
     },
     "highway": {
@@ -53,7 +56,8 @@ building_dict = {
         "score": 16.0,
         "water": 100.0,
         "chosen": False,
-        "ability": "",
+        "count": 0,
+        "ability": "Grants a +10% score multiplier for each skyscraper constructed",
     },
     "housing": {
         "pollution": 4,
@@ -61,6 +65,7 @@ building_dict = {
         "water": 110.0,
         "chosen": False,
         "ability": "",
+        "count": 0,
     },
     "suburbs": {
         "pollution": 1,
@@ -68,6 +73,7 @@ building_dict = {
         "water": 240.0,
         "chosen": False,
         "ability": "",
+        "count": 0,
     },
     "water pump": {
         "pollution": 1,
@@ -75,6 +81,7 @@ building_dict = {
         "water": -150.0,
         "chosen": False,
         "ability": "",
+        "count": 0,
     },
     "oil well": {
         "pollution": 9,
@@ -82,6 +89,7 @@ building_dict = {
         "water": 100.0,
         "chosen": False,
         "ability": "None",
+        "count": 0,
     },
     "restaurant": {
         "pollution": 3,
@@ -150,6 +158,15 @@ def return_herbivore_count():
     return str(animals["herbivores"]["count"])
 def return_carnivore_count():
     return str(animals["carnivore"]["count"])
+
+def return_building_name_and_count(building):
+    constructed_string = ""
+    for item in building_dict:
+        try:
+            constructed_string += item + " x" + building_dict[item][count] + "\n"
+        except IndexError:
+            continue
+    return constructed_string
 
 def pick_available_buildings(dict, available_choices=3):
     building_names = []
@@ -308,7 +325,7 @@ def play_game():
                 print(uppercase_input + " built!")
                 city_pollution_production += building_dict[player_input]["pollution"]
                 #print(building_dict[player_input]["score"])
-                score += building_dict[player_input]["score"]
+                score += building_dict[player_input]["score"] * score_multiplier
                 city_water_net += building_dict[player_input]["water"]
                 if (player_input == "highway"):
                     highway_ability()
@@ -316,6 +333,8 @@ def play_game():
                     building_dict["restaurant"]["count"] += 1
                 if(building_dict["restaurant"]["count"] >= 1):
                     restaurant_ability()
+                if(player_input == "skyscraper"):
+                    score_multiplier += 0.1
                 break
             else:
                 print("Building not available this round, see above for valid choices")
