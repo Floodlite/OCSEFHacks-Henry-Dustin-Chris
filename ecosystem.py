@@ -111,6 +111,37 @@ def print_stats(score, pollution, temp, light_level, water_level, animals):
     print("Apex predators alive: " + str(animals["apex_predators"]["count"]))
     print("========================")
 
+def return_building_pollution(building):
+    return str(building_dict[building]["pollution"])
+def return_building_water(building):
+    return str(building_dict[building]["water"])
+def return_building_score(building):
+    return str(building_dict[building]["score"])
+def return_building_ability(building):
+    return str(building_dict[building]["ability"])
+
+def return_building_stats_long(building):
+    return "Pollution: " + str(dict[building]["pollution"]) + "\nWater consumption: " + str(dict[building]["pollution"]) + "\nScore: " + str(dict[building]["score"]) + " points" + "\nAbility: " + str(building_dict[building]["ability"])
+def line_break():
+    return "========================"
+def return_score():
+    return str(score)
+def return_pollution():
+    return str(pollution)
+def return_temperature():
+    return str(temp)
+def return_light():
+    return str(light_level)
+def return_water():
+    return str(water_level)
+def return_plant_count():
+    return str(animals["plants"]["count"])
+def return_herbivore_count():
+    return str(animals["herbivores"]["count"])
+def return_carnivore_count():
+    return str(animals["carnivore"]["count"])
+def return_apex_count():
+    return str(animals["apex_predators"]["count"])
 
 def pick_available_buildings(dict, available_choices=3):
     building_names = []
@@ -134,6 +165,16 @@ def restaurant_ability():
     building_dict["restaurant"]["count"] += 1
     animals["herbivores"]["count"] -= 10 * building_dict["restaurant"]["count"]
     print("Restaurant herbivore consumption: " + str(10 * building_dict["restaurant"]["count"]))
+
+def return_round_number():
+    global round
+    return "**** Round " + str(round) + " ****"
+def building_error_message():
+    return "Building not available this round, see above for valid choices"
+def input_error_message():
+     return "Invalid input, please try again"
+def failure_message():
+    return f"{lose_reason}\nYou have lost after {round} rounds of play with {score} points"
 
 def random_event():
     event = random.choice(list(events_dict.keys()))
@@ -180,15 +221,17 @@ def play_game():
         input("Beginning round " + str(round) + " logic update:")
         # game loop
         temp = random.randrange(int(70 + pollution * 0.95), int(100.0 + pollution * 1.25), 1) # random temp fluctuation, exacerbated by pollution/climate change
-        
+        light_level = random.randrange(int(80 - pollution * 0.8), int(100 - pollution * 0.6), 1) # random light fluctuation, reduced by pollution
+
         water_level -= ORGANIC_WATER_NEED * animals["plants"]["count"] * temp * 0.01 # plant consumption, boil-off rate mult
         water_level += WATER_REPLENISH_RATE + city_water_net * (pollution * (1 - POLLUTION_EFFECT_FACTOR)) # standin for water toxicity until implemented
         organic_matter -= ORGANIC_MATTER_NEED * animals["plants"]["count"] # plant fertilizer consumption
         organic_matter += ORGANICS_REPLENISH_RATE + city_organics_production * (1 - (pollution * POLLUTION_EFFECT_FACTOR)) # city composting, etc, pollution means some wasted
 
         pollution = abs(pollution + city_pollution_production) # can't be negative
-        animals["plants"]["count"] += PLANT_GROWTH_FACTOR * (light_level * 0.01) * animals["plants"]["count"] * (pollution * (1 - POLLUTION_EFFECT_FACTOR))
-        input("Plants have grown, beginning animal population updates.")
+        grown = PLANT_GROWTH_FACTOR * (light_level * 0.01) * animals["plants"]["count"] * (1 - pollution * POLLUTION_EFFECT_FACTOR)
+        # print(f"{grown} plants have grown.")
+        animals["plants"]["count"] += grown
         if pollution > 100:
             gameover = True
             lose_reason = "The ecosystem is too toxic to support life. All life has perished."
@@ -198,24 +241,26 @@ def play_game():
         for i, (animal, animal_dict) in enumerate(animals.items(), start=1):
             count = animal_dict["count"]
             natural_deaths = BASE_DEATH_RATE * count * (pollution * POLLUTION_EFFECT_FACTOR + 1)
+            # print(f"Natural deaths for {animal} is {natural_deaths}.")
             count -= natural_deaths * (1 - (pollution * POLLUTION_EFFECT_FACTOR)) # pollution represents toxicity, some cannot be recycled
             organic_matter += natural_deaths 
             if i < animal_types: # not plants
-                input("Predation phase...")
-                input(f"Animal to prey on is {list(animals.keys())[i]} and amount of that animal is {list(animals.values())[i]["count"]}.")
+                # input("Predation phase...")
+                # input(f"Animal to prey on is {list(animals.keys())[i]} and amount of that animal alive is {list(animals.values())[i]["count"]}.")
                 count += ENERGY_TRANSFER_EFFICENCY * PREDATION_RATE * list(animals.values())[i]["count"] # "ate" a lower tier animal
             if i > 1: # not apex predators
-                input("Eating animals of species...")
-                input(f"Animal to be consumed is {list(animals.keys())[i-1]} and amount of that animal is {list(animals.values())[i-1]["count"]}.")
-                eaten = PREDATION_RATE * count * list(animals.values())[i-1]["count"] # "got eaten" by a higher tier animal
+                # input("Eating animals of species...")
+                # input(f"Animal to be consumed is {animal} by {list(animals.keys())[i-2]} and amount of that animal alive is {count}.")
+                eaten = PREDATION_RATE * list(animals.values())[i-2]["count"] # "got eaten" by a higher tier animal
                 count -= eaten
-                organic_matter += eaten * (1 - (pollution * POLLUTION_EFFECT_FACTOR)) # replenishes organic matter
+                # print("Eaten by higher tier animal: " + str(eaten))
+                organic_matter += eaten * (1 - (pollution * POLLUTION_EFFECT_FACTOR))  # replenishes organic matter
             animal_dict["count"] = count
-            input(f"Animal population updated for animal {animal}. i is {i}.")
+            # input(f"Animal population updated for animal {animal}. i is {i}.")
             if count < 0: # todo: give options for human intervention to save ecosystem
                 gameover = True
                 lose_reason = f"The {animal} population has collapsed. The ecosystem is incapable of sustaining life without human rebalancing."
-        input("Game logic updated.")
+        # input("Game logic updated.")
     # ongoing event modifiers
         for event in modifiers_ongoning:
             event["duration"] -= 1
@@ -225,40 +270,42 @@ def play_game():
                 if event["city_pollution_production"]:
                     city_pollution_production -= event["city_pollution_production"]
                 del event
-    input("Random events updated.")
-    # make new random events(open-ended dice roll, in theory scales infinitely)
-    while random.random() < 0.2:
-        random_event()
-        input("Random event triggered.")
-    # player choices
-    print("**** Round " + str(round) + " ****")
-    print_stats(score, pollution, temp, light_level, water_level, animals)
-    pick_available_buildings(building_dict, 3)
-    while(True):
-        print_dict(building_dict)
-        player_input = input("Choose your building: ")
-        player_input = player_input.lower()
-        try:
-            if(building_dict[player_input]["chosen"]):
-                city_pollution_production += building_dict[player_input]["pollution"]
-                score += building_dict[player_input]["score"]
-                city_water_net += building_dict[player_input]["water"]
-                if(player_input == "highway"):
-                    highway_ability()
-                if (player_input == "restaurant"):
-                    building_dict["restaurant"]["count"] += 1
-                restaurant_ability()
-                break
-            else:
-                print("Building not available this round, see above for valid choices")
+        # input("Random events updated.")
+        # make new random events(open-ended dice roll, in theory scales infinitely)
+        while random.random() < 0.2:
+            random_event()
+            # input("Random event triggered.")
+        # player choices
+        print("**** Round " + str(round) + " ****")
+        print_stats(score, pollution, temp, light_level, water_level, animals)
+        pick_available_buildings(building_dict, 3)
+        while (True):
+            print_dict(building_dict)
+            player_input = input("Choose your building: ")
+            uppercase_input = player_input
+            player_input = player_input.lower()
+            try:
+                if (building_dict[player_input]["chosen"]):
+                    print(uppercase_input + " built!")
+                    city_pollution_production += building_dict[player_input]["pollution"]
+                    score += building_dict[player_input]["score"]
+                    city_water_net += building_dict[player_input]["water"]
+                    if (player_input == "highway"):
+                        highway_ability()
+                    if (player_input == "restaurant"):
+                        building_dict["restaurant"]["count"] += 1
+                    if(building_dict["restaurant"]["count"] >= 1):
+                        restaurant_ability()
+                    break
+                else:
+                    print("Building not available this round, see above for valid choices")
+                    continue
+            except IndexError:
+                print("Invalid input, please try again")
                 continue
-        except Exception as e:
-            print(f"Error: {e}")
-            print("Invalid input, please try again")
-            continue
 
         # filler text and display graphics
-        print("Score: " + str(score))
+        print_stats(score, pollution, temp, light_level, water_level, animals)
         round += 1
 
     # endgame psa
