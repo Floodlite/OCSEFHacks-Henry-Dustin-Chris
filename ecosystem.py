@@ -1,6 +1,15 @@
 import random
 import math
 
+lose_reason = ""
+score = 0
+score_multiplier = 1.0
+pollution = 0.0
+temp = 68.0
+light_level = 100.0
+water_level = 1000000.0 # declare existence for usage in functions
+modifiers_ongoning = []
+
 events_dict = {
     "drought": {
         "city_water_net": -500.0,
@@ -23,14 +32,16 @@ building_dict = {
         "score": 30,
         "water": 500.0,
         "chosen": False,
-        "ability": "None",
+        "ability": "",
+        "count": 0,
     },
     "park": {
         "pollution": -5.0,
         "score": -10,
         "water": -10.0,
         "chosen": False,
-        "ability": "None",
+        "count": 0,
+        "ability": "",
     },
     "highway": {
         "pollution": 4.5,
@@ -45,28 +56,32 @@ building_dict = {
         "score": 16.0,
         "water": 100.0,
         "chosen": False,
-        "ability": "None",
+        "count": 0,
+        "ability": "Grants a +10% score multiplier for each skyscraper constructed",
     },
     "housing": {
         "pollution": 4,
         "score": 4,
         "water": 110.0,
         "chosen": False,
-        "ability": "None",
+        "ability": "",
+        "count": 0,
     },
     "suburbs": {
         "pollution": 1,
         "score": 4,
         "water": 240.0,
         "chosen": False,
-        "ability": "None",
+        "ability": "",
+        "count": 0,
     },
     "water pump": {
         "pollution": 1,
         "score": -2,
         "water": -150.0,
         "chosen": False,
-        "ability": "None",
+        "ability": "",
+        "count": 0,
     },
     "oil well": {
         "pollution": 9,
@@ -74,6 +89,7 @@ building_dict = {
         "water": 100.0,
         "chosen": False,
         "ability": "None",
+        "count": 0,
     },
     "restaurant": {
         "pollution": 3,
@@ -85,9 +101,10 @@ building_dict = {
     },
 }
 
+
 def print_dict(dict):
     for item in dict:
-        if(not dict[item]["chosen"]):
+        if (not dict[item]["chosen"]):
             continue
         print("_________________________")
         print(item)
@@ -96,6 +113,7 @@ def print_dict(dict):
         print("Score: " + str(dict[item]["score"]) + " points")
         print("Ability: " + str(dict[item]["ability"]))
         print("_________________________")
+
 
 def print_stats(score, pollution, temp, light_level, water_level, animals):
     print("========================")
@@ -107,7 +125,7 @@ def print_stats(score, pollution, temp, light_level, water_level, animals):
     print("========================")
     print("Plants alive: " + str(animals["plants"]["count"]))
     print("Herbivores alive: " + str(animals["herbivores"]["count"]))
-    print("Carnivores alive: "  + str(animals["carnivores"]["count"]))
+    print("Carnivores alive: " + str(animals["carnivores"]["count"]))
     print("Apex predators alive: " + str(animals["apex_predators"]["count"]))
     print("========================")
 
@@ -143,6 +161,15 @@ def return_carnivore_count():
 def return_apex_count():
     return str(animals["apex_predators"]["count"])
 
+def return_building_name_and_count(building):
+    constructed_string = ""
+    for item in building_dict:
+        try:
+            constructed_string += item + " x" + building_dict[item][count] + "\n"
+        except IndexError:
+            continue
+    return constructed_string
+
 def pick_available_buildings(dict, available_choices=3):
     building_names = []
     for item in dict:
@@ -152,13 +179,13 @@ def pick_available_buildings(dict, available_choices=3):
     for i in range(available_choices):
         dict[building_names[i]]["chosen"] = True
 
+
 def highway_ability():
     global score
     global building_dict
     building_dict["highway"]["count"] += 1
     score += 2 * building_dict["highway"]["count"]
     print("Highway count: " + str(building_dict["highway"]["count"]))
-
 def restaurant_ability():
     global animals
     global building_dict
@@ -182,6 +209,7 @@ def random_event():
     modifiers_ongoning.append(events_dict[event])
     print(events_dict[event]["description"])
 
+
 def play_game():
     round = 1
     score = 0
@@ -192,7 +220,7 @@ def play_game():
     light_level = 100.0
     water_level = 1000000.0
     organic_matter = 100000.0
-    water_toxicity = 0.0 # pollution bleedthrough + user buildings, implement later
+    water_toxicity = 0.0  # pollution bleedthrough + user buildings, implement later
 
     animal_types = 4
     animals = { # order matters, top predates on next level down
@@ -203,18 +231,18 @@ def play_game():
     }
     
     ORGANIC_WATER_NEED = 0.01
-    PLANT_GROWTH_FACTOR = 0.03
-    WATER_REPLENISH_RATE = 1000.0 # aquifers, rain, natural sources
-    ORGANICS_REPLENISH_RATE = 100.0 # natural decay, etc from outside ecosystem entering
-    ENERGY_TRANSFER_EFFICENCY = 0.1 # how much energy is transferred from one trophic level to the next
+    PLANT_GROWTH_FACTOR = 0.05
+    WATER_REPLENISH_RATE = 1000.0  # aquifers, rain, natural sources
+    ORGANICS_REPLENISH_RATE = 100.0  # natural decay, etc from outside ecosystem entering
+    ENERGY_TRANSFER_EFFICENCY = 0.1  # how much energy is transferred from one trophic level to the next
     POLLUTION_EFFECT_FACTOR = 0.01
     BASE_DEATH_RATE = 0.01
     PREDATION_RATE = 0.02
-    ORGANIC_MATTER_NEED = 0.01 
-    STARVATION_RATE = 0.2 # only works later, right now useless until intervention of dying ecosystem possible
-    city_water_net = 0.0 # you can add pumps later to increase this, or drain it with consumption
-    city_pollution_production = 0.0 # buildings affect
-    city_organics_production = 0.0 # composting, etc, can be negative with certain buildings
+    ORGANIC_MATTER_NEED = 0.01
+    STARVATION_RATE = 0.2  # only works later, right now useless until intervention of dying ecosystem possible
+    city_water_net = 0.0  # you can add pumps later to increase this, or drain it with consumption
+    city_pollution_production = 0.0  # buildings affect
+    city_organics_production = 0.0  # composting, etc, can be negative with certain buildings
 
     # todo: random events, player direct intervention, maximum "living space" mechanic to reduce growth over time
     while not gameover:
@@ -224,7 +252,7 @@ def play_game():
         light_level = random.randrange(int(80 - pollution * 0.8), int(100 - pollution * 0.6), 1) # random light fluctuation, reduced by pollution
 
         water_level -= ORGANIC_WATER_NEED * animals["plants"]["count"] * temp * 0.01 # plant consumption, boil-off rate mult
-        water_level += WATER_REPLENISH_RATE + city_water_net * (pollution * (1 - POLLUTION_EFFECT_FACTOR)) # standin for water toxicity until implemented
+        water_level += WATER_REPLENISH_RATE + city_water_net * (1 - pollution * POLLUTION_EFFECT_FACTOR) # standin for water toxicity until implemented
         organic_matter -= ORGANIC_MATTER_NEED * animals["plants"]["count"] # plant fertilizer consumption
         organic_matter += ORGANICS_REPLENISH_RATE + city_organics_production * (1 - (pollution * POLLUTION_EFFECT_FACTOR)) # city composting, etc, pollution means some wasted
 
@@ -312,7 +340,9 @@ def play_game():
     print(f"You have lost, after {round} rounds of play.")
     print(lose_reason)
     print(f"You scored {score} points.")
-    return input("Play again(Y/N)?")
+    return input("Play again(Y/N)? ")
+
+
 while True:
     try:
         input("Beginning game loop:")
