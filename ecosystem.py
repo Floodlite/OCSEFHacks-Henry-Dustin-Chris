@@ -23,11 +23,12 @@ events_dict = {
         "duration": 4
     },
 
-    "nuclear_meltdown": {
+    "nuclear meltdown": {
         "city_pollution_production": 25,
         "description": "A nuclear meltdown has occurred, increasing pollution significantly. Pollution will increase by 25 units next turn.",
         "duration": 1
-    }
+    },
+    
 }
 
 modifiers_ongoing = []
@@ -84,7 +85,7 @@ building_dict = {
     "water pump": {
         "pollution": 1,
         "score": -2,
-        "water": -150.0,
+        "water": -300.0,
         "chosen": False,
         "ability": "",
         "count": 0,
@@ -115,7 +116,7 @@ def print_dict(dict):
         print("_________________________")
         print(item)
         print("Pollution: " + str(dict[item]["pollution"]))
-        print("Water consumption: " + str(dict[item]["pollution"]))
+        print("Water consumption: " + str(dict[item]["water"]))
         print("Score: " + str(dict[item]["score"]) + " points")
         print("Ability: " + str(dict[item]["ability"]))
         print("_________________________")
