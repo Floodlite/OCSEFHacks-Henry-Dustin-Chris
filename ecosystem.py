@@ -1,3 +1,5 @@
+import random
+
 score = 0
 gameover = False
 lose_reason = ""
@@ -27,15 +29,16 @@ STARVATION_RATE = 0.2
 city_water_net = 0.0 # you can add pumps later to increase this, or drain it with consumption
 city_pollution_production = 0.0 # buildings affect
 
-# todo: forgot what, come back later
+# todo: water toxicity, human intervention options, more complex food web, random events (droughts, floods, etc), player choices and consequences, graphics and UI, endgame PSA about real world ecosystem collapse and how to help
 
 while gameover == False:
     i = animal_types
     # game loop
-    water_level -= organic_matter * ORGANIC_WATER_NEED * SUNLIGHT_GROWTH_FACTOR * plants
-    water_level += WATER_REPLENISH_RATE + city_water_net * (pollution * (1 - POLLUTION_EFFECT_FACTOR))
-    pollution = abs(pollution + city_pollution_production)
-    plants += SUNLIGHT_GROWTH_FACTOR * plants * (pollution * (1 - POLLUTION_EFFECT_FACTOR))
+    temp = random.random(70 + pollution * 0.95, 100 + pollution * 1.25) # random temp fluctuation, exacerbated by pollution/climate change
+    water_level -= ORGANIC_WATER_NEED * plants * temp * 0.01 # plant consumption, boil-off rate mult
+    water_level += WATER_REPLENISH_RATE + city_water_net * (pollution * (1 - POLLUTION_EFFECT_FACTOR)) # standin for water toxicity until implemented
+    pollution = abs(pollution + city_pollution_production) # can't be negative
+    plants += SUNLIGHT_GROWTH_FACTOR * light_level * plants * (pollution * (1 - POLLUTION_EFFECT_FACTOR))
     if pollution > 100:
         gameover = True
         lose_reason = "The ecosystem is too toxic to support life. All life has perished."
@@ -52,11 +55,11 @@ while gameover == False:
         if i != animal_types: # not apex predators
             count -= PREDATION_RATE * count * animals[i+1]["count"] # "got eaten" by a higher tier animal
         animal_dict["count"] = count
-        if count < 0:
+        if count < 0: # todo: give options for human intervention to save ecosystem
             gameover = True
-            for animal_dict in animals[:i+1]: # all animals above start starving unless user re-introduces them
-                animal_dict["count"] -= (1 - STARVATION_RATE * animal_dict["count"]) + 1 # remove small nums of animals
-
+            lose_reason = f"The {animal} population has collapsed. The ecosystem is incapable of sustaining life without human rebalancing."
+        
+            
     # player choices
     # filler text and display graphics
     print("Score: " + str(score))
