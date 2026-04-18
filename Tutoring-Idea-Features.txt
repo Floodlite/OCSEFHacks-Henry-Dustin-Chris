@@ -1,12 +1,12 @@
-# idea: ai khan academy - find name later
+# idea: tutoring software - find name later
 # user takes survey(o)
 # user gets personal "profile"(o)
 # user is suggested courses(o)
-# user takes courses
+# user takes courses - demo features one "basic algebra" course
 # user builds "learning level"
-# personalization through instructions and inferred leanring style(o)
+# personalization through instructions and inferred learning style(o)
 # course adapts to learning level and other factors as local agent is given user skill level and inferred/explicit preferences
 # user can view "progress" on skills individually, select tutoring videos from library(o) or talk directly to agent tutor (o)
-# user data saved to cloud and website(o, start with cmdline and local storage)
+# user data saved to cloud and website(o, start with cmdline and local storage, migrate to oci + flask)
 # grounding problems/concepts in class given, ensure agent knows the basic difficulty level of a problems
-# ollama or similar local hosting, api call if time permits (openai key setup)
+# ollama or similar local hosting, api call if time permits(o, openai key setup)
