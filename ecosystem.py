@@ -1,6 +1,13 @@
 import random
 import math
 
+lose_reason = ""
+score = 0
+pollution = 0.0
+temp = 100.0
+light_level = 100.0
+water_level = 1000000.0 # declare existence for usage in functions
+
 events_dict = {
     "drought": {
         "city_water_net": -500.0,
@@ -139,7 +146,7 @@ def return_building_ability(building):
     return str(building_dict[building]["ability"])
 
 def return_building_stats_long(building):
-    return "Pollution: " + str(dict[building]["pollution"]) + "\nWater consumption: " + str(dict[building]["pollution"]) + "\nScore: " + str(dict[building]["score"]) + " points" + "\nAbility: " + str(dict[building]["ability"])
+    return "Pollution: " + str(dict[building]["pollution"]) + "\nWater consumption: " + str(dict[building]["pollution"]) + "\nScore: " + str(dict[building]["score"]) + " points" + "\nAbility: " + str(building_dict[building]["ability"])
 def line_break():
     return "========================"
 def return_score():
