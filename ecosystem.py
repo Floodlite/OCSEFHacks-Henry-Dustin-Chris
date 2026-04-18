@@ -260,6 +260,7 @@ def play_game():
         pollution = abs(pollution + city_pollution_production) # can't be negative
         animals["plants"]["count"] += PLANT_GROWTH_FACTOR * (light_level * 0.01) * animals["plants"]["count"] * (pollution * (1 - POLLUTION_EFFECT_FACTOR))
         input("Plants have grown, beginning animal population updates.")
+        print(f"Plants: {animals['plants']['count']},")
         if pollution > 100:
             gameover = True
             lose_reason = "The ecosystem is too toxic to support life. All life has perished."
@@ -269,17 +270,19 @@ def play_game():
         for i, (animal, animal_dict) in enumerate(animals.items(), start=1):
             count = animal_dict["count"]
             natural_deaths = BASE_DEATH_RATE * count * (pollution * POLLUTION_EFFECT_FACTOR + 1)
+            print(f"Natural deaths for {animal} is {natural_deaths}.")
             count -= natural_deaths * (1 - (pollution * POLLUTION_EFFECT_FACTOR)) # pollution represents toxicity, some cannot be recycled
             organic_matter += natural_deaths 
             if i < animal_types: # not plants
                 input("Predation phase...")
-                input(f"Animal to prey on is {list(animals.keys())[i]} and amount of that animal is {list(animals.values())[i]["count"]}.")
+                input(f"Animal to prey on is {list(animals.keys())[i]} and amount of that animal alive is {list(animals.values())[i]["count"]}.")
                 count += ENERGY_TRANSFER_EFFICENCY * PREDATION_RATE * list(animals.values())[i]["count"] # "ate" a lower tier animal
             if i > 1: # not apex predators
                 input("Eating animals of species...")
-                input(f"Animal to be consumed is {list(animals.keys())[i-1]} and amount of that animal is {list(animals.values())[i-1]["count"]}.")
-                eaten = PREDATION_RATE * count * list(animals.values())[i-1]["count"] # "got eaten" by a higher tier animal
+                input(f"Animal to be consumed is {list(animals.keys())[i-1]} and amount of that animal alive is {list(animals.values())[i-1]["count"]}.")
+                eaten = PREDATION_RATE * count # "got eaten" by a higher tier animal
                 count -= eaten
+                print("Eaten by higher tier animal: " + str(eaten))
                 organic_matter += eaten * (1 - (pollution * POLLUTION_EFFECT_FACTOR))  # replenishes organic matter
             animal_dict["count"] = count
             input(f"Animal population updated for animal {animal}. i is {i}.")
@@ -287,6 +290,10 @@ def play_game():
                 gameover = True
                 lose_reason = f"The {animal} population has collapsed. The ecosystem is incapable of sustaining life without human rebalancing."
         input("Game logic updated.")
+        print(f"Plants: {animals['plants']['count']},")
+        print(f"Herbivores: {animals['herbivores']['count']},")
+        print(f"Carnivores: {animals['carnivores']['count']},")
+        print(f"Apex predators: {animals['apex_predators']['count']},")
     # ongoing event modifiers
         for event in modifiers_ongoning:
             event["duration"] -= 1
@@ -331,9 +338,9 @@ def play_game():
             print("Invalid input, please try again")
             continue
 
-        # filler text and display graphics
-        print("Score: " + str(score))
-        round += 1
+    # filler text and display graphics
+    print("Score: " + str(score))
+    round += 1
 
     # endgame psa
     print(f"You have lost, after {round} rounds of play.")
