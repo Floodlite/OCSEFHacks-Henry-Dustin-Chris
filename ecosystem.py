@@ -39,14 +39,14 @@ building_dict = {
         "score": 30,
         "water": 500.0,
         "chosen": False,
-        "ability": "None",
+        "ability": "",
     },
     "park": {
         "pollution": -5.0,
         "score": -10,
         "water": -10.0,
         "chosen": False,
-        "ability": "None",
+        "ability": "",
     },
     "highway": {
         "pollution": 4.5,
@@ -61,28 +61,28 @@ building_dict = {
         "score": 16.0,
         "water": 100.0,
         "chosen": False,
-        "ability": "None",
+        "ability": "",
     },
     "housing": {
         "pollution": 4,
         "score": 4,
         "water": 110.0,
         "chosen": False,
-        "ability": "None",
+        "ability": "",
     },
     "suburbs": {
         "pollution": 1,
         "score": 4,
         "water": 240.0,
         "chosen": False,
-        "ability": "None",
+        "ability": "",
     },
     "water pump": {
         "pollution": 1,
         "score": -2,
         "water": -150.0,
         "chosen": False,
-        "ability": "None",
+        "ability": "",
     },
     "oil well": {
         "pollution": 9,
@@ -301,23 +301,26 @@ def play_game():
     while (True):
         print_dict(building_dict)
         player_input = input("Choose your building: ")
+        uppercase_input = player_input
         player_input = player_input.lower()
         try:
             if (building_dict[player_input]["chosen"]):
+                print(uppercase_input + " built!")
                 city_pollution_production += building_dict[player_input]["pollution"]
+                #print(building_dict[player_input]["score"])
                 score += building_dict[player_input]["score"]
                 city_water_net += building_dict[player_input]["water"]
                 if (player_input == "highway"):
                     highway_ability()
                 if (player_input == "restaurant"):
                     building_dict["restaurant"]["count"] += 1
-                restaurant_ability()
+                if(building_dict["restaurant"]["count"] >= 1):
+                    restaurant_ability()
                 break
             else:
                 print("Building not available this round, see above for valid choices")
                 continue
-        except Exception as e:
-            print(f"Error: {e}")
+        except IndexError:
             print("Invalid input, please try again")
             continue
 
@@ -329,7 +332,7 @@ def play_game():
     print(f"You have lost, after {round} rounds of play.")
     print(lose_reason)
     print(f"You scored {score} points.")
-    return input("Play again(Y/N)?")
+    return input("Play again(Y/N)? ")
 
 
 while True:
