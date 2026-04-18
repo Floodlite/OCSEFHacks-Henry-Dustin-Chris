@@ -1,0 +1,39 @@
+Imports
+
+
+Initalize inital populations
+Points
+Plants
+Consumers
+Secondary consumers
+Apex predators
+Decomposers
+
+Variables
+Organic matter (usable energy)
+Sunlight
+Water
+
+Urban Sprawl
+Pollution
+Temperature
+
+Gameplay loop
+Choose building to construct
+* Factory: High pollution, high points
+Modify temperature and pollution accordingly
+
+
+Change populations
+1. Grass grows
+2. Consumers consume grass
+ * Each consumers eats 10 units of grass
+3. Predators consume consumers
+  * Each predator eats 100 units of consumers
+4. Increase decomposers and organic matter whenever something dies
+5. Kill off animals for old age (scales over time)
+Print results
+
+If everyone is dead, game over
+If temperature or pollution get too high, game over
+Cut to PSA
