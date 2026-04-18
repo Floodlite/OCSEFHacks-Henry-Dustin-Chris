@@ -68,10 +68,10 @@ def print_stats():
     print("Light Level: " + str(light_level))
     print("Water Level: " + str(water_level))
     print("========================")
-    print("Plants alive: " + str(plants))
-    print("Herbivores alive: " + str(herbivores))
-    print("Carnivores alive: "  + str(carnivores))
-    print("Apex predators alive: " + str(apex_predators))
+    print("Plants alive: " + str(animals["plants"]["count"]))
+    print("Herbivores alive: " + str(animals["herbivores"]["count"]))
+    print("Carnivores alive: "  + str(animals["carnivores"]["count"]))
+    print("Apex predators alive: " + str(animals["apex_predators"]["count"]))
     print("========================")
 
 
@@ -89,11 +89,12 @@ def pick_available_buildings(dict, available_choices=3):
 while gameover == False:
     i = animal_types
     # game loop
+    #fix random.random
     temp = random.random(70 + pollution * 0.95, 100 + pollution * 1.25) # random temp fluctuation, exacerbated by pollution/climate change
-    water_level -= ORGANIC_WATER_NEED * plants * temp * 0.01 # plant consumption, boil-off rate mult
+    water_level -= ORGANIC_WATER_NEED * animals["plants"]["count"] * temp * 0.01 # plant consumption, boil-off rate mult
     water_level += WATER_REPLENISH_RATE + city_water_net * (pollution * (1 - POLLUTION_EFFECT_FACTOR)) # standin for water toxicity until implemented
     pollution = abs(pollution + city_pollution_production) # can't be negative
-    plants += SUNLIGHT_GROWTH_FACTOR * light_level * plants * (pollution * (1 - POLLUTION_EFFECT_FACTOR))
+    animals["plants"]["count"] += SUNLIGHT_GROWTH_FACTOR * light_level * animals["plants"]["count"] * (pollution * (1 - POLLUTION_EFFECT_FACTOR))
     if pollution > 100:
         gameover = True
         lose_reason = "The ecosystem is too toxic to support life. All life has perished."
@@ -118,7 +119,7 @@ while gameover == False:
     # player choices
     print("**** Round " + str(round) + " ****")
     print_stats()
-    pick_available_buildings(building_dict, 1)
+    pick_available_buildings(building_dict, 3)
     while(True):
         print_dict(building_dict)
         player_input = input("Choose your building: ")
