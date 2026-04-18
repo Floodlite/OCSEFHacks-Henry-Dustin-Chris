@@ -205,9 +205,11 @@ def failure_message():
 
 def random_event():
     event = random.choice(list(events_dict.keys()))
-    print("Random event: " + events_dict[event]["description"])
     modifiers_ongoning.append(events_dict[event])
-    print(events_dict[event]["description"])
+    if event["city_water_net"]: # too lazy to implement global variable search to dynamically unapply, do if leftover time
+        city_water_net -= event["city_water_net"]
+    if event["city_pollution_production"]:
+        city_pollution_production -= event["city_pollution_production"]
 
 
 def play_game():
@@ -244,7 +246,6 @@ def play_game():
     city_pollution_production = 0.0  # buildings affect
     city_organics_production = 0.0  # composting, etc, can be negative with certain buildings
 
-    # todo: random events, player direct intervention, maximum "living space" mechanic to reduce growth over time
     while not gameover:
         input("Beginning round " + str(round) + " logic update:")
         # game loop
