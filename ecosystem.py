@@ -34,20 +34,70 @@ city_pollution_production = 0.0 # buildings affect
 
 building_dict = {
     "factory": {
-        "pollution": 100,
+        "pollution": 10.0,
         "score": 30,
+        "water": 500.0,
         "chosen": False,
+        "ability": "None",
     },
     "park": {
-        "pollution": -20,
+        "pollution": -5.0,
         "score": -10,
+        "water": -10.0,
         "chosen": False,
+        "ability": "None",
     },
     "highway": {
-        "pollution": 50,
-        "score": 15,
+        "pollution": 4.5,
+        "score": 6,
+        "water": 200.0,
         "chosen": False,
-    }
+        "count": 0,
+        "ability": "Ability: Grants +2 score for each highway constructed",
+    },
+    "skyscraper": {
+        "pollution": 6.5,
+        "score": 16.0,
+        "water": 100.0,
+        "chosen": False,
+        "ability": "None",
+    },
+    "housing": {
+        "pollution": 4,
+        "score": 4,
+        "water": 110.0,
+        "chosen": False,
+        "ability": "None",
+    },
+    "suburbs": {
+        "pollution": 1,
+        "score": 4,
+        "water": 240.0,
+        "chosen": False,
+        "ability": "None",
+    },
+    "water pump": {
+        "pollution": 1,
+        "score": -2,
+        "water": -150.0,
+        "chosen": False,
+        "ability": "None",
+    },
+    "oil well": {
+        "pollution": 9,
+        "score": 12,
+        "water": 100.0,
+        "chosen": False,
+        "ability": "None",
+    },
+    "restaurant": {
+        "pollution": 3,
+        "score": 6.5,
+        "water": 110.0,
+        "chosen": False,
+        "count": 0,
+        "ability": "Ability: Consumes 10 herbivores each turn per restaurant",
+    },
 }
 
 def print_dict(dict):
@@ -57,7 +107,9 @@ def print_dict(dict):
         print("_________________________")
         print(item)
         print("Pollution: " + str(dict[item]["pollution"]))
-        print("Score: " + str(dict[item]["score"]))
+        print("Water consumption: " + str(dict[item]["pollution"]))
+        print("Score: " + str(dict[item]["score"]) + " points")
+        print("Ability: " + str(dict[item]["ability"]))
         print("_________________________")
 
 def print_stats():
@@ -80,11 +132,23 @@ def pick_available_buildings(dict, available_choices=3):
     for item in dict:
         building_names.append(item)
         dict[item]["chosen"] = False
-
     random.shuffle(building_names)
     for i in range(available_choices):
         dict[building_names[i]]["chosen"] = True
 
+def highway_ability():
+    global score
+    global building_dict
+    building_dict["highway"]["count"] += 1
+    score += 2 * building_dict["highway"]["count"]
+    print("Highway count: " + str(building_dict["highway"]["count"]))
+
+def restaurant_ability():
+    global animals
+    global building_dict
+    building_dict["restaurant"]["count"] += 1
+    animals["herbivores"]["count"] -= 10 * building_dict["restaurant"]["count"]
+    print("Restaurant herbivore consumption: " + str(10 * building_dict["restaurant"]["count"]))
 
 while gameover == False:
     i = animal_types
@@ -126,8 +190,14 @@ while gameover == False:
         player_input = player_input.lower()
         try:
             if(building_dict[player_input]["chosen"]):
-                pollution += building_dict[player_input]["pollution"]
+                city_pollution_production += building_dict[player_input]["pollution"]
                 score += building_dict[player_input]["score"]
+                city_water_net += building_dict[player_input]["water"]
+                if(player_input == "highway"):
+                    highway_ability()
+                if (player_input == "restaurant"):
+                    building_dict["restaurant"]["count"] += 1
+                restaurant_ability()
                 break
             else:
                 print("Building not available this round, see above for valid choices")
