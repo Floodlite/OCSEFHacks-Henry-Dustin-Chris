@@ -4,7 +4,7 @@ import math
 lose_reason = ""
 score = 0
 pollution = 0.0
-temp = 100.0
+temp = 68.0
 light_level = 100.0
 water_level = 1000000.0 # declare existence for usage in functions
 
@@ -19,7 +19,7 @@ events_dict = {
         "city_pollution_production": 6.0,
         "description": "An industrial spill has occurred, increasing pollution. Pollution will increase by 6 units per turn until the spill is cleaned up after the next 4 turns.",
         "duration": 4
-    }
+    },
 }
 
 modifiers_ongoning = []
