@@ -84,7 +84,7 @@ function renderEvents() {
 
 function renderChoices() {
     if (gameState.gameover) {
-        buildingChoices.innerHTML = `<p class="empty-state">No more building choices. Start a new game to play again.</p>`;
+        buildingChoices.innerHTML = `<p class="empty-state">Thank you for playing. Ecological damage is a real phenomenon occurring around the world as a side effect of urban development. It isn't inevitable. We can make a difference. To learn more, visit https://sdgs.un.org/topics/sustainable-cities-and-human-settlements Start a new game to play again.</p>`;
         return;
     }
 

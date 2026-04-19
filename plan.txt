@@ -1,24 +1,24 @@
 Imports
 
 
-Initalize inital populations(MVP, Polish 80%, Bonus 45%)
-Points(In Progress, 90%)
+Initalize inital populations(Polish & MVP Done)
+Points(Done)
 Plants(Done)
 Consumers(Done)
 Secondary consumers(Done)
 Apex predators(Done)
 Decomposers(Done)
 
-Variables(MVP Done, Polish 50%, Bonus 35%)
+Variables(MVP Done, Polish 80%)
 Organic matter (usable energy)(Done)
-Sunlight(Pending)
+Sunlight(Done)
 Water(Done)
 
 Urban Sprawl
-Pollution(90%-Done depending on feature buildin)
-Temperature(90%-Done depending on feature buildin)
+Pollution(Done depending on feature buildin)
+Temperature(Done depending on feature buildin)
 
-Gameplay loop(90-Done)
+Gameplay loop(Done)
 Choose building to construct
 * Factory: High pollution, high points
 Modify temperature and pollution accordingly
@@ -37,18 +37,3 @@ Print results(Done)
 If everyone is dead, game over(Done)
 If resource exhausted or pollution gets too high, game over(Done)
 Cut to PSA(Done)
-
-TODO:
-3:00: Begin playtesting, bughunting, confirms MVP ships
-4:00 Ship MVP version, begin polish(DONE)
-4:10 Finalize roadmap(DONE)
-4:40 Finish polish(40%)
-4:45-5:30 Wrap up, networking, buffer time, extras(Pending)
-EXTRAS(All Pending):
-
-1. Difficulty level, scales w/ time and base difficulty selection
-1a. Affects event frequency, intensity, pollution/score gains(mult to both positive)
-
-2. Flavor text events, "news ticker"
-
-3. 
