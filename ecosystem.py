@@ -67,7 +67,7 @@ BUILDING_TEMPLATES = {
     "water pump": {
         "pollution": 2.0,
         "score": -2.0,
-        "water": -300.0,
+        "water": -500.0,
         "ability": "Improves water supply, but costs points.",
     },
     "oil well": {
@@ -119,15 +119,16 @@ def reset_game_state():
             "herbivores": {"count": 1_000.0},
             "plants": {"count": 10_000.0},
         },
-        "ORGANIC_WATER_NEED": 0.05,
-        "PLANT_GROWTH_FACTOR": 0.05,
+        "ORGANIC_WATER_NEED": 0.1,
+        "PLANT_GROWTH_FACTOR": 0.1,
         "WATER_REPLENISH_RATE": 1000.0,
         "ORGANICS_REPLENISH_RATE": 100.0,
         "ENERGY_TRANSFER_EFFICIENCY": 0.1,
-        "POLLUTION_EFFECT_FACTOR": 0.01,
-        "BASE_DEATH_RATE": 0.01,
-        "PREDATION_RATE": 0.035,
-        "ORGANIC_MATTER_NEED": 0.01,
+        "POLLUTION_MAX": 1000,
+        "POLLUTION_EFFECT_FACTOR": 0.001,
+        "BASE_DEATH_RATE": 0.04,
+        "PREDATION_RATE": 0.08,
+        "ORGANIC_MATTER_NEED": 0.02,
         "EVENT_CHANCE": 0.25,
         "city_water_net": 0.0,
         "city_pollution_production": 0.0,
@@ -263,13 +264,13 @@ def advance_round(game_state):
     trigger_random_events(game_state)
 
     game_state["temp"] = random.randrange(
-        int(70 + game_state["pollution"] * 0.95),
-        int(100.0 + game_state["pollution"] * 1.25) + 1,
+        int(70 + (game_state["pollution"] * 0.95 * game_state["POLLUTION_EFFECT_FACTOR"])),
+        int(100.0 + (game_state["pollution"] * 1.25 * game_state["POLLUTION_EFFECT_FACTOR"])) + 1,
         1,
     )
     game_state["light_level"] = random.randrange(
-        max(int(80 - game_state["pollution"] * 0.8), 10),
-        max(int(120 - game_state["pollution"]), 20) + 1,
+        max(int(80 - (game_state["pollution"] * 0.8 * game_state["POLLUTION_EFFECT_FACTOR"])), 0),
+        max(int(120 - (game_state["pollution"] * 1.2 * game_state["POLLUTION_EFFECT_FACTOR"])), 20) + 1,
         1,
     )
 
@@ -337,7 +338,7 @@ def advance_round(game_state):
                 "The ecosystem is incapable of sustaining life without human rebalancing."
             )
 
-    if game_state["pollution"] > 100:
+    if game_state["pollution"] > game_state["POLLUTION_MAX"]:
         game_state["gameover"] = True
         game_state["lose_reason"] = "The ecosystem is too toxic to support life."
     elif game_state["water_level"] < 0:
