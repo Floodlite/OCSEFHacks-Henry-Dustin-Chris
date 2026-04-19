@@ -10,6 +10,7 @@ const resetButton = document.getElementById('resetButton');
 
 let gameState = null;
 
+//background image
 const background2 = new Image();
 background2.src = "images/background2.jpg";
 
@@ -41,6 +42,7 @@ function statValue(label, value) {
     return value;
 }
 
+
 function renderStats() {
     statsGrid.innerHTML = statConfig.map(([label, key]) => `
         <div class="stat-card">
@@ -56,6 +58,7 @@ function renderStats() {
         </div>
     `).join("");
 }
+
 
 function renderEvents() {
     if (!gameState.active_events.length && !gameState.recent_events.length) {
@@ -82,6 +85,7 @@ function renderEvents() {
     eventList.innerHTML = recent + active;
 }
 
+
 function renderChoices() {
     if (gameState.gameover) {
         buildingChoices.innerHTML = `<p class="empty-state">No more building choices. Start a new game to play again.</p>`;
@@ -102,6 +106,7 @@ function renderChoices() {
         button.addEventListener('click', () => chooseBuilding(button.dataset.building));
     });
 }
+
 
 function renderBuiltCounts() {
     const built = Object.entries(gameState.built_counts)
@@ -129,6 +134,7 @@ function renderMessage(message = "") {
 
     messageBox.textContent = fallback;
 }
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 function renderScene() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -153,21 +159,23 @@ function renderScene() {
     ctx.fillStyle = '#0b6fa4';
     ctx.fillRect(0, waterY, canvas.width, canvas.height - waterY);
 
-    const plantHeight = Math.min(170, gameState.animals.plants / 90);
-    ctx.fillStyle = '#2f8f3d';
+    // change by log 10
+    const plantHeight = Math.min(170, 60 * Math.log10(gameState.animals.plants / 90));
+    ctx.fillStyle = '#2f8f3d'
     ctx.fillRect(60, canvas.height - 40 - plantHeight, 110, plantHeight);
 
-    const herbHeight = Math.min(170, gameState.animals.herbivores / 9);
+    const herbHeight = Math.min(170, 60 * Math.log10(gameState.animals.herbivores / 9));
     ctx.fillStyle = '#f4d35e';
     ctx.fillRect(220, canvas.height - 40 - herbHeight, 110, herbHeight);
 
-    const carnHeight = Math.min(170, gameState.animals.carnivores / 2);
+    const carnHeight = Math.min(170, 60 * Math.log10(gameState.animals.carnivores / 0.9));
     ctx.fillStyle = '#ee964b';
     ctx.fillRect(380, canvas.height - 40 - carnHeight, 110, carnHeight);
 
-    const apexHeight = Math.min(170, gameState.animals.apex_predators * 4);
+    const apexHeight = Math.min(170, 60 * Math.log10(gameState.animals.apex_predators / 0.09));
     ctx.fillStyle = '#f95738';
     ctx.fillRect(540, canvas.height - 40 - apexHeight, 110, apexHeight);
+
 
     ctx.fillStyle = '#f7fff7';
     ctx.font = '700 18px Trebuchet MS';
