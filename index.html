@@ -5,22 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Ecosystem Simulation</title>
     <link rel="stylesheet" href="style.css">
-    
 </head>
-
 <body>
     <div class="container">
-        <h1 class="site-header">Ecosystem Simulation</h1>
-        <p>
-            About
-        </p>
-        <div class="main-screen">
-            <canvas id="simulationCanvas" width="700" height="450"></canvas>
-            <script src="script.js"></script>
+        <header class="hero">
+            <p class="eyebrow">Urban Growth vs. Ecological Stability</p>
+            <h1 class="site-header">Ecosystem Simulation</h1>
+            <p class="hero-copy">
+                Build a city one choice at a time without collapsing the food web underneath it. Frontend was built with the assistance of artifical intelligence.
+            </p>
+        </header>
+
+        <main class="dashboard">
+            <section class="panel stats-panel">
+                <div class="panel-header">
+                    <h2>Live Stats</h2>
+                    <button id="resetButton" class="reset-button" type="button">New Game</button>
+                </div>
+                <div class="stats-grid" id="statsGrid"></div>
+                <div class="animal-grid" id="animalGrid"></div>
+            </section>
+
+            <section class="panel scene-panel">
+                <canvas id="simulationCanvas" width="720" height="420"></canvas>
+                <div class="scene-meta">
+                    <div>
+                        <h2>Round Summary</h2>
+                        <p id="messageBox">Loading ecosystem state...</p>
+                    </div>
+                    <div>
+                        <h2>Active Events</h2>
+                        <div id="eventList" class="event-list"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel build-panel">
+                <h2>Choose A Building</h2>
+                <p class="panel-copy">
+                    Each build immediately affects pollution, water, and future scoring. Pick carefully.
+                </p>
+                <div id="buildingChoices" class="building-choices"></div>
+                <div class="built-summary">
+                    <h3>Built So Far</h3>
+                    <div id="builtCounts" class="built-counts"></div>
+                </div>
+            </section>
+        </main>
+
+        <div class="footer-note">
+            MVP frontend connected to the Python simulation through Flask.
         </div>
-        <p>
-            More info about the ecosystem
-        </p>
     </div>
+    <script src="script.js"></script>
 </body>
 </html>

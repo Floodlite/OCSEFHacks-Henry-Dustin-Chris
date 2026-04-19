@@ -1,387 +1,414 @@
+import copy
 import random
-import math
 
-animals = { # order matters, top predates on next level down
-        "apex_predators": {"count": 10.0},
-        "carnivores": {"count": 100.0},
-        "herbivores": {"count": 1000.0},
-        "plants": {"count": 10000.0}
-    }
-lose_reason = ""
-score = 0
-score_multiplier = 1.0
-pollution = 0.0
-temp = 68.0
-light_level = 100.0
-water_level = 1000000.0 # declare existence for usage in functions
-modifiers_ongoing = []
 
-events_dict = {
+EVENT_TEMPLATES = {
     "drought": {
         "city_water_net": -500.0,
-        "description": "A severe drought has reduced water availability. Water will reduce by 500 units per turn for the next 5 turns.",
-        "duration": 5
+        "description": "A severe drought has reduced water availability for the next 5 turns.",
+        "duration": 5,
     },
-
     "industrial spill": {
         "city_pollution_production": 6.0,
-        "description": "An industrial spill has occurred, increasing pollution. Pollution will increase by 6 units per turn until the spill is cleaned up after the next 4 turns.",
-        "duration": 4
+        "description": "An industrial spill is increasing pollution for the next 4 turns.",
+        "duration": 4,
     },
-
     "nuclear meltdown": {
-        "city_pollution_production": 25,
-        "description": "A nuclear meltdown has occurred, increasing pollution significantly. Pollution will increase by 25 units next turn.",
-        "duration": 1
+        "city_pollution_production": 25.0,
+        "description": "A nuclear meltdown causes a sharp pollution spike this turn.",
+        "duration": 1,
     },
     "overpopulation": {
         "city_pollution_production": 5.0,
-        "description": "New societal and biological developments cause populations to swell. Populations increase by 35% and pollution will increase by 5 units for the next 4 turns",
+        "population_multiplier": 1.35,
+        "description": "Population growth surges for the next 4 turns.",
         "duration": 4,
     },
 }
 
-modifiers_ongoing = []
 
-building_dict = {
+BUILDING_TEMPLATES = {
     "factory": {
         "pollution": 10.0,
-        "score": 30,
+        "score": 30.0,
         "water": 500.0,
-        "chosen": False,
-        "ability": "",
-        "count": 0,
+        "ability": "High score output, but it accelerates pollution fast.",
     },
     "park": {
         "pollution": -5.0,
-        "score": -10,
+        "score": -10.0,
         "water": -10.0,
-        "chosen": False,
-        "count": 0,
-        "ability": "",
+        "ability": "Reduces pollution at the cost of points.",
     },
     "highway": {
         "pollution": 4.5,
-        "score": 6,
+        "score": 6.0,
         "water": 200.0,
-        "chosen": False,
-        "count": 0,
-        "ability": "Ability: Grants +2 score for each highway constructed",
+        "ability": "Adds bonus score and a little ongoing point generation.",
     },
     "skyscraper": {
         "pollution": 6.5,
         "score": 16.0,
         "water": 100.0,
-        "chosen": False,
-        "count": 0,
-        "ability": "Grants a +10% score multiplier for each skyscraper constructed",
+        "ability": "Boosts the score multiplier by 10%.",
     },
     "housing": {
-        "pollution": 4,
-        "score": 4,
+        "pollution": 4.0,
+        "score": 4.0,
         "water": 110.0,
-        "chosen": False,
-        "ability": "",
-        "count": 0,
+        "ability": "Steady growth with modest costs.",
     },
     "suburbs": {
-        "pollution": 1,
-        "score": 4,
+        "pollution": 1.0,
+        "score": 4.0,
         "water": 240.0,
-        "chosen": False,
-        "ability": "",
-        "count": 0,
+        "ability": "Low pollution, but high water use.",
     },
     "water pump": {
-        "pollution": 1,
-        "score": -2,
+        "pollution": 1.0,
+        "score": -2.0,
         "water": -300.0,
-        "chosen": False,
-        "ability": "",
-        "count": 0,
+        "ability": "Improves water supply, but costs points.",
     },
     "oil well": {
-        "pollution": 9,
-        "score": 12,
+        "pollution": 9.0,
+        "score": 12.0,
         "water": 100.0,
-        "chosen": False,
-        "ability": "None",
-        "count": 0,
+        "ability": "Solid score gain with heavy pollution impact.",
     },
     "restaurant": {
-        "pollution": 3,
+        "pollution": 3.0,
         "score": 6.5,
         "water": 110.0,
-        "chosen": False,
-        "count": 0,
-        "ability": "Ability: Consumes 10 herbivores each turn per restaurant",
+        "ability": "Consumes herbivores each turn once built.",
     },
 }
 
 
-def print_dict(dict):
-    for item in dict:
-        if (not dict[item]["chosen"]):
-            continue
-        print("_________________________")
-        print(item)
-        print("Pollution: " + str(dict[item]["pollution"]))
-        print("Water consumption: " + str(dict[item]["water"]))
-        print("Score: " + str(dict[item]["score"]) + " points")
-        print("Ability: " + str(dict[item]["ability"]))
-        print("_________________________")
+ANIMAL_ORDER = ["apex_predators", "carnivores", "herbivores", "plants"]
 
 
-def print_stats(score, pollution, temp, light_level, water_level, animals):
-    print("========================")
-    print("Your score: " + str(score))
-    print("Pollution: " + str(pollution))
-    print("Temperature: " + str(temp))
-    print("Light Level: " + str(light_level))
-    print("Water Level: " + str(water_level))
-    print("========================")
-    print("Plants alive: " + str(animals["plants"]["count"]))
-    print("Herbivores alive: " + str(animals["herbivores"]["count"]))
-    print("Carnivores alive: " + str(animals["carnivores"]["count"]))
-    print("Apex predators alive: " + str(animals["apex_predators"]["count"]))
-    print("========================")
-
-def return_building_pollution(building):
-    return str(building_dict[building]["pollution"])
-def return_building_water(building):
-    return str(building_dict[building]["water"])
-def return_building_score(building):
-    return str(building_dict[building]["score"])
-def return_building_ability(building):
-    return str(building_dict[building]["ability"])
-
-def return_building_stats_long(building):
-    return "Pollution: " + str(dict[building]["pollution"]) + "\nWater consumption: " + str(dict[building]["pollution"]) + "\nScore: " + str(dict[building]["score"]) + " points" + "\nAbility: " + str(building_dict[building]["ability"])
-def line_break():
-    return "========================"
-def return_score():
-    return str(score)
-def return_pollution():
-    return str(pollution)
-def return_temperature():
-    return str(temp)
-def return_light():
-    return str(light_level)
-def return_water():
-    return str(water_level)
-def return_plant_count():
-    return str(animals["plants"]["count"])
-def return_herbivore_count():
-    return str(animals["herbivores"]["count"])
-def return_carnivore_count():
-    return str(animals["carnivore"]["count"])
-def return_apex_count():
-    return str(animals["apex_predators"]["count"])
-
-def return_building_name_and_count(building):
-    constructed_string = ""
-    for item in building_dict:
-        try:
-            constructed_string += item + " x" + building_dict[item]["count"] + "\n"
-        except IndexError:
-            continue
-    return constructed_string
-
-def pick_available_buildings(dict, available_choices=3):
-    building_names = []
-    for item in dict:
-        building_names.append(item)
-        dict[item]["chosen"] = False
-    random.shuffle(building_names)
-    for i in range(available_choices):
-        dict[building_names[i]]["chosen"] = True
-
-
-def highway_ability():
-    global score
-    global building_dict
-    building_dict["highway"]["count"] += 1
-    score += 2 * building_dict["highway"]["count"]
-    print("Highway count: " + str(building_dict["highway"]["count"]))
-def restaurant_ability():
-    global animals
-    global building_dict
-    building_dict["restaurant"]["count"] += 1
-    animals["herbivores"]["count"] -= 10 * building_dict["restaurant"]["count"]
-    print("Restaurant herbivore consumption: " + str(10 * building_dict["restaurant"]["count"]))
-
-def return_round_number():
-    global round
-    return "**** Round " + str(round) + " ****"
-def building_error_message():
-    return "Building not available this round, see above for valid choices"
-def input_error_message():
-     return "Invalid input, please try again"
-def failure_message():
-    return f"{lose_reason}\nYou have lost after {round} rounds of play with {score} points"
-
-def random_event():
-    event = random.choice(list(events_dict.keys()))
-    modifiers_ongoing.append(events_dict[event])
-    if event["city_water_net"]: # too lazy to implement global variable search to dynamically unapply, do if leftover time
-        city_water_net += event["city_water_net"]
-    if event["city_pollution_production"]:
-        city_pollution_production += event["city_pollution_production"]
-    if(event["overpopulation"]):
-        city_pollution_production += event["city_pollution_production"]
-        for item in animals:
-            animals[item]["count"] *= 1.35
-
-
-def play_game():
-    score_multiplier = 1.0
-    round = 1
-    score = 0
-    gameover = False
-    lose_reason = ""
-    pollution = 0.0
-    temp = 100.0
-    light_level = 100.0
-    water_level = 1000000.0
-    organic_matter = 100000.0
-    water_toxicity = 0.0  # pollution bleedthrough + user buildings, implement later
-
-    animal_types = 4
-    animals = { # order matters, top predates on next level down
-        "apex_predators": {"count": 10.0},
-        "carnivores": {"count": 100.0},
-        "herbivores": {"count": 1000.0},
-        "plants": {"count": 10000.0}
+def reset_building_dict():
+    return {
+        name: {
+            **copy.deepcopy(stats),
+            "chosen": False,
+            "count": 0,
+        }
+        for name, stats in BUILDING_TEMPLATES.items()
     }
-    
-    ORGANIC_WATER_NEED = 0.01
-    PLANT_GROWTH_FACTOR = 0.05
-    WATER_REPLENISH_RATE = 1000.0  # aquifers, rain, natural sources
-    ORGANICS_REPLENISH_RATE = 100.0  # natural decay, etc from outside ecosystem entering
-    ENERGY_TRANSFER_EFFICENCY = 0.1  # how much energy is transferred from one trophic level to the next
-    POLLUTION_EFFECT_FACTOR = 0.01
-    BASE_DEATH_RATE = 0.01
-    PREDATION_RATE = 0.02
-    ORGANIC_MATTER_NEED = 0.01
-    STARVATION_RATE = 0.2  # only works later, right now useless until intervention of dying ecosystem possible
-    city_water_net = 0.0  # you can add pumps later to increase this, or drain it with consumption
-    city_pollution_production = 0.0  # buildings affect
-    city_organics_production = 0.0  # composting, etc, can be negative with certain buildings
-
-    while not gameover:
-        input("Beginning round " + str(round) + " logic update:")
-        # game loop
-        temp = random.randrange(int(70 + pollution * 0.95), int(100.0 + pollution * 1.25), 1) # random temp fluctuation, exacerbated by pollution/climate change
-        light_level = random.randrange(int(80 - pollution * 0.8), int(100 - pollution * 0.6), 1) # random light fluctuation, reduced by pollution
-
-        water_level -= ORGANIC_WATER_NEED * animals["plants"]["count"] * temp * 0.01 # plant consumption, boil-off rate mult
-        water_level += WATER_REPLENISH_RATE + city_water_net * (1 - pollution * POLLUTION_EFFECT_FACTOR) # standin for water toxicity until implemented
-        organic_matter -= ORGANIC_MATTER_NEED * animals["plants"]["count"] # plant fertilizer consumption
-        organic_matter += ORGANICS_REPLENISH_RATE + city_organics_production * (1 - (pollution * POLLUTION_EFFECT_FACTOR)) # city composting, etc, pollution means some wasted
-
-        pollution = abs(pollution + city_pollution_production) # can't be negative
-        grown = PLANT_GROWTH_FACTOR * (light_level * 0.01) * animals["plants"]["count"] * (1 - pollution * POLLUTION_EFFECT_FACTOR)
-        # print(f"{grown} plants have grown.")
-        animals["plants"]["count"] += grown
-        if pollution > 100:
-            gameover = True
-            lose_reason = "The ecosystem is too toxic to support life. All life has perished."
-        if water_level < 0:
-            gameover = True
-            lose_reason = "The ecosystem has no more clean water. All life has perished."
-        for i, (animal, animal_dict) in enumerate(animals.items(), start=1):
-            count = animal_dict["count"]
-            natural_deaths = BASE_DEATH_RATE * count * (pollution * POLLUTION_EFFECT_FACTOR + 1)
-            # print(f"Natural deaths for {animal} is {natural_deaths}.")
-            count -= natural_deaths * (1 - (pollution * POLLUTION_EFFECT_FACTOR)) # pollution represents toxicity, some cannot be recycled
-            organic_matter += natural_deaths 
-            if i < animal_types: # not plants
-                # input("Predation phase...")
-                # input(f"Animal to prey on is {list(animals.keys())[i]} and amount of that animal alive is {list(animals.values())[i]["count"]}.")
-                count += ENERGY_TRANSFER_EFFICENCY * PREDATION_RATE * list(animals.values())[i]["count"] # "ate" a lower tier animal
-            if i > 1: # not apex predators
-                # input("Eating animals of species...")
-                # input(f"Animal to be consumed is {animal} by {list(animals.keys())[i-2]} and amount of that animal alive is {count}.")
-                eaten = PREDATION_RATE * list(animals.values())[i-2]["count"] # "got eaten" by a higher tier animal
-                count -= eaten
-                # print("Eaten by higher tier animal: " + str(eaten))
-                organic_matter += eaten * (1 - (pollution * POLLUTION_EFFECT_FACTOR))  # replenishes organic matter
-            animal_dict["count"] = count
-            # input(f"Animal population updated for animal {animal}. i is {i}.")
-            if count < 0: # todo: give options for human intervention to save ecosystem
-                gameover = True
-                lose_reason = f"The {animal} population has collapsed. The ecosystem is incapable of sustaining life without human rebalancing."
-        # input("Game logic updated.")
-    # ongoing event modifiers
-        for event in modifiers_ongoing:
-            event["duration"] -= 1
-            if event["duration"] <= 0:
-                if event["city_water_net"]: # too lazy to implement global variable search to dynamically unapply, do if leftover time
-                    city_water_net -= event["city_water_net"]
-                if event["city_pollution_production"]:
-                    city_pollution_production -= event["city_pollution_production"]
-                if(event["overpopulation"]):
-                    city_pollution_production -= event["city_pollution_production"]
-                    for item in animals:
-                        animals[item]["count"] /= 1.35
-                del event
-        # input("Random events updated.")
-        # make new random events(open-ended dice roll, in theory scales infinitely)
-        while random.random() < 0.2:
-            random_event()
-            # input("Random event triggered.")
-        # player choices
-        print("**** Round " + str(round) + " ****")
-        print_stats(score, pollution, temp, light_level, water_level, animals)
-        pick_available_buildings(building_dict, 3)
-        while (True):
-            print_dict(building_dict)
-            player_input = input("Choose your building: ")
-            uppercase_input = player_input
-            player_input = player_input.lower()
-            try:
-                if (building_dict[player_input]["chosen"]):
-                    print(uppercase_input + " built!")
-                    city_pollution_production += building_dict[player_input]["pollution"]
-                    score += building_dict[player_input]["score"] * score_multiplier
-                    city_water_net += building_dict[player_input]["water"]
-                    if (player_input == "highway"):
-                        highway_ability()
-                    if (player_input == "restaurant"):
-                        building_dict["restaurant"]["count"] += 1
-                    if(building_dict["restaurant"]["count"] >= 1):
-                        restaurant_ability()
-                    if (player_input == "skyscraper"):
-                        score_multiplier += 0.1
-                    break
-                else:
-                    print("Building not available this round, see above for valid choices")
-                    continue
-            except IndexError:
-                print("Invalid input, please try again")
-                continue
-
-        # filler text and display graphics
-        print_stats(score, pollution, temp, light_level, water_level, animals)
-        round += 1
-
-    # endgame psa
-    print(f"You have lost, after {round} rounds of play.")
-    print(lose_reason)
-    print(f"You scored {score} points.")
-    return input("Play again(Y/N)? ")
 
 
-while True:
-    try:
-        input("Beginning game loop:")
-        replay = play_game()
-        if replay.lower() != "y":
-            print(
-                """Thank you for playing. While this game is a simple simulation, it represents very real problems in the world. 
-                Ecosystem collapse is a very real threat, and we all have a role to play in preventing it everyday. 
-                Please consider learning more about how you can help protect our planet and its ecosystems at https://sdgs.un.org/goals/goal12."""
-                )
-            break
-    except Exception as e:
-        print("An error occurred: " + str(e))
+def reset_game_state():
+    game_state = {
+        "round": 1,
+        "score": 0.0,
+        "score_multiplier": 1.0,
+        "gameover": False,
+        "lose_reason": "",
+        "status": "Playing",
+        "pollution": 0.0,
+        "temp": 68.0,
+        "light_level": 100.0,
+        "water_level": 1_000_000.0,
+        "organic_matter": 100_000.0,
+        "water_toxicity": 0.0,
+        "animals": {
+            "apex_predators": {"count": 10.0},
+            "carnivores": {"count": 100.0},
+            "herbivores": {"count": 1_000.0},
+            "plants": {"count": 10_000.0},
+        },
+        "ORGANIC_WATER_NEED": 0.01,
+        "PLANT_GROWTH_FACTOR": 0.05,
+        "WATER_REPLENISH_RATE": 1000.0,
+        "ORGANICS_REPLENISH_RATE": 100.0,
+        "ENERGY_TRANSFER_EFFICIENCY": 0.1,
+        "POLLUTION_EFFECT_FACTOR": 0.01,
+        "BASE_DEATH_RATE": 0.01,
+        "PREDATION_RATE": 0.02,
+        "ORGANIC_MATTER_NEED": 0.01,
+        "EVENT_CHANCE": 0.2,
+        "city_water_net": 0.0,
+        "city_pollution_production": 0.0,
+        "city_organics_production": 0.0,
+        "city_point_generation": 0.0,
+        "modifiers_ongoing": [],
+        "building_dict": reset_building_dict(),
+        "available_buildings": [],
+        "recent_events": [],
+        "last_building": "",
+    }
+    pick_available_buildings(game_state)
+    return game_state
+
+
+def pick_available_buildings(game_state, available_choices=3):
+    building_dict = game_state["building_dict"]
+    building_names = list(building_dict.keys())
+    random.shuffle(building_names)
+    chosen = building_names[:available_choices]
+    for name, stats in building_dict.items():
+        stats["chosen"] = name in chosen
+    game_state["available_buildings"] = chosen
+    return chosen
+
+
+def create_event(name):
+    event = copy.deepcopy(EVENT_TEMPLATES[name])
+    event["name"] = name
+    event["remaining_duration"] = event["duration"]
+    return event
+
+
+def apply_event_effect(game_state, event):
+    if "city_water_net" in event:
+        game_state["city_water_net"] += event["city_water_net"]
+    if "city_pollution_production" in event:
+        game_state["city_pollution_production"] += event["city_pollution_production"]
+    if "population_multiplier" in event:
+        for animal in game_state["animals"].values():
+            animal["count"] *= event["population_multiplier"]
+
+
+def remove_event_effect(game_state, event):
+    if "city_water_net" in event:
+        game_state["city_water_net"] -= event["city_water_net"]
+    if "city_pollution_production" in event:
+        game_state["city_pollution_production"] -= event["city_pollution_production"]
+    if "population_multiplier" in event:
+        for animal in game_state["animals"].values():
+            animal["count"] /= event["population_multiplier"]
+
+
+def trigger_random_events(game_state):
+    triggered = []
+    while random.random() < game_state["EVENT_CHANCE"]:
+        event_name = random.choice(list(EVENT_TEMPLATES.keys()))
+        event = create_event(event_name)
+        apply_event_effect(game_state, event)
+        game_state["modifiers_ongoing"].append(event)
+        triggered.append(
+            {
+                "name": event["name"],
+                "description": event["description"],
+                "duration": event["duration"],
+            }
+        )
+    game_state["recent_events"] = triggered
+    return triggered
+
+
+def tick_events(game_state):
+    active_events = []
+    for event in game_state["modifiers_ongoing"]:
+        event["remaining_duration"] -= 1
+        if event["remaining_duration"] <= 0:
+            remove_event_effect(game_state, event)
+        else:
+            active_events.append(event)
+    game_state["modifiers_ongoing"] = active_events
+
+
+def highway_ability(game_state, building_dict):
+    building_dict["highway"]["count"] += 1
+    game_state["score"] += 2.0 * building_dict["highway"]["count"]
+    game_state["city_point_generation"] += 0.4 * building_dict["highway"]["count"]
+
+
+def restaurant_ability(game_state, building_dict):
+    herbivore_loss = 10.0 * building_dict["restaurant"]["count"]
+    game_state["animals"]["herbivores"]["count"] = max(
+        game_state["animals"]["herbivores"]["count"] - herbivore_loss,
+        0.0,
+    )
+
+
+def apply_building_choice(game_state, building_name):
+    building_dict = game_state["building_dict"]
+    building_key = building_name.strip().lower()
+
+    if game_state["gameover"]:
+        return False, "The game is over. Start a new game to keep playing."
+    if building_key not in building_dict:
+        return False, "Invalid input, please try again."
+    if not building_dict[building_key]["chosen"]:
+        return False, "Building not available this round, see above for valid choices."
+
+    building = building_dict[building_key]
+    game_state["last_building"] = building_key
+    game_state["city_pollution_production"] += building["pollution"]
+    game_state["score"] += building["score"] * game_state["score_multiplier"]
+    game_state["city_point_generation"] += building["score"] * 0.2
+    game_state["city_water_net"] += building["water"]
+
+    if building_key == "highway":
+        highway_ability(game_state, building_dict)
+    else:
+        building["count"] += 1
+
+    if building_key == "restaurant":
+        restaurant_ability(game_state, building_dict)
+    if building_key == "skyscraper":
+        game_state["score_multiplier"] += 0.1
+
+    advance_round(game_state)
+    if not game_state["gameover"]:
+        game_state["round"] += 1
+        pick_available_buildings(game_state)
+    return True, f"{building_key.title()} built."
+
+
+def advance_round(game_state):
+    trigger_random_events(game_state)
+
+    game_state["temp"] = random.randrange(
+        int(70 + game_state["pollution"] * 0.95),
+        int(100.0 + game_state["pollution"] * 1.25) + 1,
+        1,
+    )
+    game_state["light_level"] = random.randrange(
+        max(int(80 - game_state["pollution"] * 0.8), 10),
+        max(int(120 - game_state["pollution"]), 20) + 1,
+        1,
+    )
+
+    plants = game_state["animals"]["plants"]["count"]
+    pollution_factor = max(0.0, 1.0 - game_state["pollution"] * game_state["POLLUTION_EFFECT_FACTOR"])
+
+    game_state["water_level"] -= (
+        game_state["ORGANIC_WATER_NEED"] * plants * game_state["temp"] * 0.01
+    )
+    game_state["water_level"] += (
+        game_state["WATER_REPLENISH_RATE"] + game_state["city_water_net"]
+    ) * pollution_factor
+    game_state["organic_matter"] -= game_state["ORGANIC_MATTER_NEED"] * plants
+    game_state["organic_matter"] += (
+        game_state["ORGANICS_REPLENISH_RATE"] + game_state["city_organics_production"]
+    ) * pollution_factor
+    game_state["score"] += game_state["city_point_generation"] * game_state["score_multiplier"]
+
+    game_state["pollution"] = max(
+        game_state["pollution"] + game_state["city_pollution_production"],
+        0.0,
+    )
+
+    grown = (
+        game_state["PLANT_GROWTH_FACTOR"]
+        * (game_state["light_level"] * 0.01)
+        * plants
+        * pollution_factor
+    )
+    game_state["animals"]["plants"]["count"] += grown
+
+    if game_state["building_dict"]["restaurant"]["count"] > 0:
+        restaurant_ability(game_state, game_state["building_dict"])
+
+    for index, animal_name in enumerate(ANIMAL_ORDER):
+        count = game_state["animals"][animal_name]["count"]
+        natural_deaths = game_state["BASE_DEATH_RATE"] * count * (
+            game_state["pollution"] * game_state["POLLUTION_EFFECT_FACTOR"] + 1
+        )
+        count -= natural_deaths * pollution_factor
+        game_state["organic_matter"] += natural_deaths
+
+        if index < len(ANIMAL_ORDER) - 1:
+            prey_name = ANIMAL_ORDER[index + 1]
+            prey_count = game_state["animals"][prey_name]["count"]
+            count += (
+                game_state["ENERGY_TRANSFER_EFFICIENCY"]
+                * game_state["PREDATION_RATE"]
+                * prey_count
+            )
+
+        if index > 0:
+            predator_name = ANIMAL_ORDER[index - 1]
+            predator_count = game_state["animals"][predator_name]["count"]
+            eaten = game_state["PREDATION_RATE"] * predator_count
+            count -= eaten
+            game_state["organic_matter"] += eaten * pollution_factor
+
+        game_state["animals"][animal_name]["count"] = count
+
+        if count <= 0:
+            game_state["gameover"] = True
+            game_state["lose_reason"] = (
+                f"The {animal_name.replace('_', ' ')} population has collapsed. "
+                "The ecosystem is incapable of sustaining life without human rebalancing."
+            )
+
+    if game_state["pollution"] > 100:
+        game_state["gameover"] = True
+        game_state["lose_reason"] = "The ecosystem is too toxic to support life."
+    elif game_state["water_level"] < 0:
+        game_state["gameover"] = True
+        game_state["lose_reason"] = "The ecosystem has run out of clean water."
+    elif game_state["organic_matter"] < 0:
+        game_state["gameover"] = True
+        game_state["lose_reason"] = "The ecosystem has exhausted its organic matter reserves."
+
+    tick_events(game_state)
+
+    if game_state["gameover"]:
+        game_state["status"] = "Game Over"
+        game_state["available_buildings"] = []
+        for stats in game_state["building_dict"].values():
+            stats["chosen"] = False
+
+
+def serialize_game_state(game_state):
+    return {
+        "round": game_state["round"],
+        "score": round(game_state["score"], 1),
+        "score_multiplier": round(game_state["score_multiplier"], 2),
+        "status": game_state["status"],
+        "gameover": game_state["gameover"],
+        "lose_reason": game_state["lose_reason"],
+        "pollution": round(game_state["pollution"], 1),
+        "water_level": round(game_state["water_level"], 1),
+        "temperature": round(game_state["temp"], 1),
+        "light_level": round(game_state["light_level"], 1),
+        "organic_matter": round(game_state["organic_matter"], 1),
+        "city_pollution_production": round(game_state["city_pollution_production"], 1),
+        "city_water_net": round(game_state["city_water_net"], 1),
+        "city_point_generation": round(game_state["city_point_generation"], 1),
+        "animals": {
+            name: round(data["count"], 1)
+            for name, data in game_state["animals"].items()
+        },
+        "available_buildings": [
+            {
+                "name": name,
+                "pollution": game_state["building_dict"][name]["pollution"],
+                "score": game_state["building_dict"][name]["score"],
+                "water": game_state["building_dict"][name]["water"],
+                "ability": game_state["building_dict"][name]["ability"],
+                "count": game_state["building_dict"][name]["count"],
+            }
+            for name in game_state["available_buildings"]
+        ],
+        "built_counts": {
+            name: stats["count"] for name, stats in game_state["building_dict"].items()
+        },
+        "recent_events": game_state["recent_events"],
+        "active_events": [
+            {
+                "name": event["name"],
+                "description": event["description"],
+                "remaining_duration": event["remaining_duration"],
+            }
+            for event in game_state["modifiers_ongoing"]
+        ],
+        "last_building": game_state["last_building"],
+    }
+
+
+if __name__ == "__main__":
+    state = reset_game_state()
+    print("Starting local console test.")
+    while not state["gameover"]:
+        print(serialize_game_state(state))
+        choice = input("Choose a building: ")
+        ok, message = apply_building_choice(state, choice)
+        print(message)
+    print(state["lose_reason"])
