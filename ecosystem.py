@@ -305,7 +305,7 @@ def advance_round(game_state):
     for index, animal_name in enumerate(ANIMAL_ORDER):
         count = game_state["animals"][animal_name]["count"]
         natural_deaths = game_state["BASE_DEATH_RATE"] * count * (
-        (4 * pollution_factor) + 1
+        pollution_factor + 1
         )
         count -= natural_deaths
         game_state["organic_matter"] += natural_deaths
