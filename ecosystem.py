@@ -29,57 +29,57 @@ EVENT_TEMPLATES = {
 
 BUILDING_TEMPLATES = {
     "factory": {
-        "pollution": 10.0,
+        "pollution": 25.0,
         "score": 30.0,
-        "water": 500.0,
+        "water": 250.0,
         "ability": "High score output, but it accelerates pollution fast.",
     },
     "park": {
-        "pollution": -5.0,
+        "pollution": -12.5,
         "score": -10.0,
-        "water": -10.0,
-        "ability": "Reduces pollution at the cost of points.",
+        "water": 180.0,
+        "ability": "Reduces pollution at the cost of points and water.",
     },
     "highway": {
         "pollution": 4.5,
         "score": 6.0,
         "water": 200.0,
-        "ability": "Adds bonus score and a little ongoing point generation.",
+        "ability": "Gets a +2 score bonus and 0.4 constant score per previous highway built",
     },
     "skyscraper": {
-        "pollution": 6.5,
+        "pollution": 12.5,
         "score": 16.0,
-        "water": 100.0,
+        "water": 300.0,
         "ability": "Boosts the score multiplier by 10%.",
     },
     "housing": {
-        "pollution": 4.0,
+        "pollution": 6.0,
         "score": 4.0,
-        "water": 110.0,
+        "water": 140.0,
         "ability": "Steady growth with modest costs.",
     },
     "suburbs": {
         "pollution": 1.0,
         "score": 4.0,
-        "water": 240.0,
+        "water": 340.0,
         "ability": "Low pollution, but high water use.",
     },
     "water pump": {
-        "pollution": 1.0,
+        "pollution": 2.0,
         "score": -2.0,
         "water": -300.0,
         "ability": "Improves water supply, but costs points.",
     },
     "oil well": {
-        "pollution": 9.0,
-        "score": 12.0,
-        "water": 100.0,
+        "pollution": 15.0,
+        "score": 18.0,
+        "water": 140.0,
         "ability": "Solid score gain with heavy pollution impact.",
     },
     "restaurant": {
-        "pollution": 3.0,
+        "pollution": 2.0,
         "score": 6.5,
-        "water": 110.0,
+        "water": 60.0,
         "ability": "Consumes herbivores each turn once built.",
     },
 }
@@ -119,16 +119,16 @@ def reset_game_state():
             "herbivores": {"count": 1_000.0},
             "plants": {"count": 10_000.0},
         },
-        "ORGANIC_WATER_NEED": 0.01,
+        "ORGANIC_WATER_NEED": 0.05,
         "PLANT_GROWTH_FACTOR": 0.05,
         "WATER_REPLENISH_RATE": 1000.0,
         "ORGANICS_REPLENISH_RATE": 100.0,
         "ENERGY_TRANSFER_EFFICIENCY": 0.1,
         "POLLUTION_EFFECT_FACTOR": 0.01,
         "BASE_DEATH_RATE": 0.01,
-        "PREDATION_RATE": 0.02,
+        "PREDATION_RATE": 0.035,
         "ORGANIC_MATTER_NEED": 0.01,
-        "EVENT_CHANCE": 0.2,
+        "EVENT_CHANCE": 0.25,
         "city_water_net": 0.0,
         "city_pollution_production": 0.0,
         "city_organics_production": 0.0,
@@ -280,7 +280,7 @@ def advance_round(game_state):
         game_state["ORGANIC_WATER_NEED"] * plants * game_state["temp"] * 0.01
     )
     game_state["water_level"] += (
-        game_state["WATER_REPLENISH_RATE"] + game_state["city_water_net"]
+        game_state["WATER_REPLENISH_RATE"] - game_state["city_water_net"]
     ) * pollution_factor
     game_state["organic_matter"] -= game_state["ORGANIC_MATTER_NEED"] * plants
     game_state["organic_matter"] += (
