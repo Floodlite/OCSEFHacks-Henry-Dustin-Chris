@@ -1,10 +1,6 @@
-<b>Ideas</b>
-* Infotainment
-* Khan Academy by user-adaptive
-* Health problems image classification network
-* Traffic simulation (Traveling Salesman Problem)
-* Boring calculator
-  * Diagnosis machine 
-* Ecosystem simulation under different environmental factors
-* Camera that tells you whether something is recyclable or not
-* [Pending]
+<b>Ecosystem</b>
+  A small infotainment project that attempts to educate users on sustainable development.
+  Currently very bare-bones, does not reflect real-world problems accurately
+  A full-stack project that utilizes Flask/Python
+  Features a full gameplay loop: build buildings, manage the ecosystem health, and keep the environment healthy.
+  Simple simulation of "animals" and trophic levels and environmental conditions.

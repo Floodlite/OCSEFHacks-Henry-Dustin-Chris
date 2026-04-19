@@ -242,14 +242,11 @@ def apply_building_choice(game_state, building_name):
     game_state["score"] += building["score"] * game_state["score_multiplier"]
     game_state["city_point_generation"] += building["score"] * 0.2
     game_state["city_water_net"] += building["water"]
+    building["count"] += 1
 
     if building_key == "highway":
         highway_ability(game_state, building_dict)
-    else:
-        building["count"] += 1
 
-    if building_key == "restaurant":
-        restaurant_ability(game_state, building_dict)
     if building_key == "skyscraper":
         game_state["score_multiplier"] += 0.1
 
@@ -308,9 +305,9 @@ def advance_round(game_state):
     for index, animal_name in enumerate(ANIMAL_ORDER):
         count = game_state["animals"][animal_name]["count"]
         natural_deaths = game_state["BASE_DEATH_RATE"] * count * (
-            game_state["pollution"] * game_state["POLLUTION_EFFECT_FACTOR"] + 1
+        4 * pollution_factor + 1
         )
-        count -= natural_deaths * pollution_factor
+        count -= natural_deaths
         game_state["organic_matter"] += natural_deaths
 
         if index < len(ANIMAL_ORDER) - 1:
