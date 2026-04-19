@@ -4,7 +4,7 @@ import random
 
 EVENT_TEMPLATES = {
     "drought": {
-        "city_water_net": -500.0,
+        "city_water_net": 500.0,
         "description": "A severe drought has reduced water availability for the next 5 turns.",
         "duration": 5,
     },
