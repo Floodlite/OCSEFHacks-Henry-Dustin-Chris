@@ -1,6 +1,12 @@
 import random
 import math
 
+animals = { # order matters, top predates on next level down
+        "apex_predators": {"count": 10.0},
+        "carnivores": {"count": 100.0},
+        "herbivores": {"count": 1000.0},
+        "plants": {"count": 10000.0}
+    }
 lose_reason = ""
 score = 0
 score_multiplier = 1.0
